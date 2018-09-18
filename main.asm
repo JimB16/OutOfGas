@@ -8,6 +8,21 @@ INCLUDE "macros.asm"
 INCLUDE "charmap.asm"
 
 
+MaxLevelNr   EQU 8*8
+
+Sound_12     EQU $12
+Sound_13     EQU $13
+Sound_15     EQU $15
+Sound_3e     EQU $3e
+Sound_47     EQU $47
+Sound_4f     EQU $4f
+Sound_80     EQU $80
+Sound_81     EQU $81
+Sound_82     EQU $82
+Sound_84     EQU $84
+Sound_85     EQU $85
+
+
 INCLUDE "rst.asm"
 
 
@@ -19,8 +34,6 @@ Start::
 
 INCLUDE "start.asm"
 
-
-;INCLUDE "bank01.asm"
 
 ;INCLUDE "bank03.asm"
 
@@ -34,10 +47,7 @@ INCLUDE "start.asm"
 
 
 
-SECTION "bank1", ROMX, BANK[$1]
-
-INCBIN "baserom.gb", 16384*1, $4000
-
+INCLUDE "bank01.asm"
 
 INCLUDE "bank02.asm"
 

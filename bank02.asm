@@ -12,8 +12,8 @@ Function24001: ; 2:4001
 ; 0x8004
 
 
-Function24004: ; 2:4004
-	jp Function2430b
+StartMusic: ; 2:4004
+	jp _StartMusic
 ; 0x8007
 
 
@@ -31,7 +31,7 @@ ResetAndFullVolume: ; 2:400d
 	call TurnAllSoundOff
 
 	xor a
-	ld [$ffa3], a
+	ld [hffa3], a
 	ld [$ffb4], a
 
 	ld a, $77
@@ -48,14 +48,14 @@ Function2401a: ; 2:401a
 	call TurnAllSoundOff
 
 	pop af
-	jp Function2430b
+	jp _StartMusic
 ; 0x8027
 
 
 Function24027: ; 2:4027
 	xor a
 	ld [$ffb1], a
-	ld [$ffa3], a
+	ld [hffa3], a
 
 TurnAllSoundOff: ; 2:402c
 	call ResetAllSoundRegisters
@@ -74,23 +74,24 @@ Function24035: ; 2:4035
 
 
 Function2403c: ; 2:403c
-	ld a, [$ffa3]
+	ld a, [hffa3]
 	or a
 	jr nz, .asm_804c
-	ld [$ffa7], a
-	ld [$ffa8], a
-	ld [$ffa9], a
-	ld [$ffaa], a
-	ld [$ffab], a
+
+	ld [hffa7], a
+	ld [hffa8], a
+	ld [hffa9], a
+	ld [hffaa], a
+	ld [hffab], a
 	ret
 
 .asm_804c
 	dec a
-	ld [$ffa3], a
+	ld [hffa3], a
 	ret nz
-	ld a, [$ffa4]
+	ld a, [hffa4]
 	ld l, a
-	ld a, [$ffa5]
+	ld a, [hffa5]
 	ld h, a
 .asm_8056
 	ld a, [hli]
@@ -107,23 +108,23 @@ Function2403c: ; 2:403c
 	cp $ff
 	jr z, .asm_8080
 	sub $4
-	ld [$ffa3], a
+	ld [hffa3], a
 	jp z, Function240f2
 	ld b, a
-	ld a, [$ffa6]
+	ld a, [hffa6]
 	add b
-	ld [$ffa3], a
+	ld [hffa3], a
 	jp Function240f2
 
 .asm_8080
 	call Function243ab
 	and [hl]
 	inc hl
-	ld [$ffa2], a
+	ld [hffa2], a
 	call Function243ab
 	and [hl]
 	inc hl
-	ld [$ffa6], a
+	ld [hffa6], a
 	jr .asm_8056
 
 .asm_8090
@@ -143,7 +144,7 @@ Function2403c: ; 2:403c
 	ld a, [hli]
 	ld [rNR44], a
 	ld a, $ff
-	ld [$ffaa], a
+	ld [hffaa], a
 	jr .asm_8056
 
 .asm_80a8
@@ -154,19 +155,21 @@ Function2403c: ; 2:403c
 	ld [rNR21], a
 	ld a, [hli]
 	ld [rNR22], a
-	ld a, [$ffa2]
+
+	ld a, [hffa2]
 	ld b, a
 	or a
 	ld a, [hli]
 	add b
 	ld [rNR23], a
+
 	ld a, $0
 	adc [hl]
 	inc hl
 	and $c7
 	ld [rNR24], a
 	ld a, $ff
-	ld [$ffa8], a
+	ld [hffa8], a
 	jp .asm_8056
 ; 0x80c7
 
@@ -184,7 +187,7 @@ Function240c7: ; 2:40c7
 	ld [rNR11], a
 	ld a, [hli]
 	ld [rNR12], a
-	ld a, [$ffa2]
+	ld a, [hffa2]
 	ld b, a
 	or a
 	ld a, [hli]
@@ -196,16 +199,16 @@ Function240c7: ; 2:40c7
 	and $c7
 	ld [rNR14], a
 	ld a, $ff
-	ld [$ffa7], a
+	ld [hffa7], a
 	jp Function2403c.asm_8056
 ; 0x80f2
 
 
 Function240f2: ; 2:40f2
 	ld a, l
-	ld [$ffa4], a
+	ld [hffa4], a
 	ld a, h
-	ld [$ffa5], a
+	ld [hffa5], a
 	ret
 ; 0x80f9
 
@@ -377,7 +380,7 @@ Function241c7: ; 2:41c7
 Function241d8: ; 2:41d8
 	inc hl
 	ld a, [hl]
-	jp Function2430b
+	jp _StartMusic
 ; 0x81dd
 
 
@@ -392,7 +395,7 @@ Function241e3: ; 2:41e3
 	dec a
 	ld [bc], a
 	jp nz, Function242fd
-	ld hl, $ffa7
+	ld hl, hffa7
 	add hl, de
 	ld a, [hl]
 	or a
@@ -635,73 +638,74 @@ Function242fd: ; 2:42fd
 ; 0x830b
 
 
-Function2430b: ; 2:430b
+_StartMusic: ; 2:430b
 	ld b, a
 	bit 7, a
 	jr nz, .asm_836e
+
 	bit 6, a
 	jr nz, .asm_8318
-	ld a, [$ffab]
+	ld a, [hffab]
 	or a
 	ret nz
 
 .asm_8318
 	xor a
-	ld [$ffa3], a
-	ld [$ffa2], a
-	ld [$ffa6], a
-	ld a, [$ffa7]
+	ld [hffa3], a
+	ld [hffa2], a
+	ld [hffa6], a
+	ld a, [hffa7]
 	or a
 	jp z, .asm_832a
 	xor a
 	ld [rNR12], a
-	ld [$ffa7], a
+	ld [hffa7], a
 
 .asm_832a
-	ld a, [$ffa8]
+	ld a, [hffa8]
 	or a
 	jp z, .asm_8335
 	xor a
 	ld [rNR22], a
-	ld [$ffa8], a
+	ld [hffa8], a
 
 .asm_8335
-	ld a, [$ffa9]
+	ld a, [hffa9]
 	or a
 	jp z, .asm_8340
 	xor a
 	ld [rNR32], a
-	ld [$ffa9], a
+	ld [hffa9], a
 
 .asm_8340
-	ld a, [$ffaa]
+	ld a, [hffaa]
 	or a
 	jp z, .asm_834b
 	xor a
 	ld [rNR42], a
-	ld [$ffaa], a
+	ld [hffaa], a
 
 .asm_834b
 	ld a, b
 	and $40
-	ld [$ffab], a
+	ld [hffab], a
 	ld a, b
 	and $3f
 	add a
 	ld e, a
 	ld d, $0
-	ld hl, $49e4
+	ld hl, data_249e4
 	add hl, de
 	ld a, [hli]
-	ld [$ffa4], a
+	ld [hffa4], a
 	ld a, [hli]
-	ld [$ffa5], a
+	ld [hffa5], a
 	ld a, $77
 	ld [rNR50], a
 	ld a, $ff
 	ld [rNR51], a
 	ld a, $1
-	ld [$ffa3], a
+	ld [hffa3], a
 	ret
 
 .asm_836e
@@ -712,12 +716,13 @@ Function2430b: ; 2:430b
 	dec a
 	ld [$ffb2], a
 	ld [$ffb5], a
+
 	ld a, b
 	and $3f
 	add a
 	ld e, a
 	ld d, $0
-	ld hl, $49e4
+	ld hl, data_249e4
 	add hl, de
 	ld a, [hli]
 	ld h, [hl]
@@ -783,5 +788,15 @@ ResetAllSoundRegisters: ; 2:43bc
 ; 0x83d6
 
 
-INCBIN "baserom.gb", 16384*2+$3d6, $4000-$3d6
+INCBIN "baserom.gb", 16384*2+$3d6, $9e4-$3d6
+
+
+data_249e4: ; 2:49e4
+dw $4BC2, $57CE, $61D4, $7064, $7132, $7233, .data_24a14, $4A27, $4A76, $4A8C, $4AA2, $4AB4, $4AD1, $4AEE, $4AFA, $4B0C, $4B52, $4B5A, $4B70, $4B77, $4B7E, $4B9B, $4BA8, $4BB5
+
+
+.data_24a14 ; 2:4a14
+
+
+INCBIN "baserom.gb", 16384*2+$a14, $4000-$a14
 

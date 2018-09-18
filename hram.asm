@@ -1,6 +1,7 @@
 
-HoldInputs            EQU $ff8a
-CurInputs            EQU $ff8b
+hHoldInputs        EQU $ff8a
+hCurInputs         EQU $ff8b
+hff8c              EQU $ff8c
 
 hff90              EQU $ff90
 hff91              EQU $ff91
@@ -10,6 +11,19 @@ hff94              EQU $ff94
 
 hff98              EQU $ff98
 hff99              EQU $ff99
+
+hffa0              EQU $ffa0
+hffa1              EQU $ffa1
+hffa2              EQU $ffa2
+hffa3              EQU $ffa3
+hffa4              EQU $ffa4
+hffa5              EQU $ffa5
+hffa6              EQU $ffa6
+hffa7              EQU $ffa7
+hffa8              EQU $ffa8
+hffa9              EQU $ffa9
+hffaa              EQU $ffaa
+hffab              EQU $ffab
 
 hffbb              EQU $ffbb
 

@@ -33,7 +33,7 @@ _Start: ; 0x150
 
 	ei
 
-	call Function316f
+	call Function316f_ResetHRam
 	call Function31b3
 	call Function333f
 	call Functiond0a
@@ -45,27 +45,31 @@ _Start: ; 0x150
 	call Functiond00
 	ld b, h
 	ccf
-	ld a, $80
-	call Function31a4
+
+	ld a, Sound_80
+	call FarCall_StartMusic
+
 	ld a, $99
-	ld [$c0e5], a
+	ld [wc0e5], a
 	ld a, $3
-	ld [$c0e6], a
+	ld [wc0e6], a
 	ld a, $1
-	ld [$c0e8], a
-	ld [$c0e9], a
+	ld [wc0e8], a
+	ld [SubLevelNr], a
 	ld a, $2
-	ld [$c0db], a
+	ld [wc0db], a
 .asm_1bd
 	ld a, $1
-	ld [$c10e], a
+	ld [wc10e], a
 	call ReadInputs
 	call Function59e
 	call Function4ff
-	ld a, [$c0dd]
+
+	ld a, [wc0dd]
 	cp $0
 	jr nz, .asm_1f1
-	ld a, [$c0db]
+
+	ld a, [wc0db]
 	cp $b
 	jr nc, .asm_1e5
 	cp $5
@@ -82,23 +86,121 @@ _Start: ; 0x150
 	call Function19ad
 
 .asm_1f1
-	ld hl, $c104
+	ld hl, wc104
 	inc [hl]
 .asm_1f5
-	ld a, [$ff8c]
+	ld a, [hff8c]
 	and a
 	jr z, .asm_1f5
+
 	xor a
-	ld [$ff8c], a
+	ld [hff8c], a
 	call Function3180
-	ld a, [$c10e]
+	ld a, [wc10e]
 	or a
 	jr nz, .asm_1f5
+
 	jr .asm_1bd
 ; 0x208
 
 
-INCBIN "baserom.gb", $208, $29e-$208
+Function208: ; 0x208
+	push af
+	push bc
+	push de
+	push hl
+	ld a, [$4000]
+	ld [$cef2], a
+	call $ff80
+	ld hl, $cef1
+	bit 1, [hl]
+	jr z, .asm_230
+	ld a, [wc10f]
+	ld [rSCX], a
+	ld a, $80
+	ld hl, $c111
+	sub [hl]
+	ld [rSCY], a
+	ld hl, rLCDC
+	res 3, [hl]
+	set 1, [hl]
+
+.asm_230
+	call Function1240
+	ld a, [$c0eb]
+	and a
+	jr z, .asm_23c
+	call Function336a
+
+.asm_23c
+	call Function3280
+	ld a, [$cef2]
+	ld [MBC1RomBank], a
+	ld hl, wc103
+	inc [hl]
+	ld hl, hff8c
+	inc [hl]
+	ld a, [wc10e]
+	dec a
+	cp $ff
+	jr z, .asm_258
+	ld [wc10e], a
+
+.asm_258
+	pop hl
+	pop de
+	pop bc
+	pop af
+	reti
+; 0x25d
+
+
+Function25d: ; 0x25d
+	push af
+	push hl
+	ld a, $b
+.asm_261
+	dec a
+	jr nz, .asm_261
+	xor a
+	ld a, [$c11a]
+	ld [rSCY], a
+	xor a
+	ld [rSCX], a
+	ld hl, rLCDC
+	set 3, [hl]
+	res 1, [hl]
+	ld a, [$ce95]
+	cp $0
+	jr z, .asm_292
+	ld a, [wc105]
+	and $3
+	jr nz, .asm_292
+	ld hl, rLYC
+	ld a, [$c0b4]
+	cp [hl]
+	jr z, .asm_292
+	jr nc, .asm_292
+	dec [hl]
+	ld hl, $c11a
+	inc [hl]
+
+.asm_292
+	pop hl
+	pop af
+	reti
+; 0x295
+
+
+Function295: ; 0x295
+	push af
+	push hl
+	ld hl, wc105
+	inc [hl]
+	pop hl
+	pop af
+	reti
+; 0x29e
 
 
 Function29e: ; 0x29e
@@ -117,7 +219,7 @@ Function29e: ; 0x29e
 	ld c, a
 	ld b, $0
 	xor a
-	ld [$c0ca], a
+	ld [wc0ca], a
 	ld hl, $cd4b
 	add hl, bc
 	ld a, [hl]
@@ -148,35 +250,357 @@ Function29e: ; 0x29e
 ; 0x2e7
 
 
-INCBIN "baserom.gb", $2e7, $4ff-$2e7
+Function2e7: ; 0x2e7
+.asm_2e7
+	ld hl, hCurInputs
+	bit 3, [hl]
+	jr z, .asm_2e7
+	ret
+; 0x2ef
+
+
+Function2ef: ; 0x2ef
+	push hl
+	push de
+	ld e, a
+	ld d, $0
+	add hl, de
+	ld a, [hl]
+	pop de
+	pop hl
+	ret
+; 0x2f9
+
+
+Function2f9: ; 0x2f9
+	xor $ff
+	add $1
+	ret
+; 0x2fe
+
+
+Function2fe: ; 0x2fe
+	push bc
+	xor a
+	ld [$cf00], a
+	ld hl, $cef3
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, wc10f
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call Function174c
+	jr c, .asm_327
+	push bc
+	ld bc, $00a0
+	add hl, bc
+	pop bc
+	call Function174c
+	jr nc, .asm_327
+	ld hl, $cee3
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	jr .asm_32c
+
+.asm_327
+	ld a, $1
+	ld [$cf00], a
+
+.asm_32c
+	ld hl, $cef5
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, $c111
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call Function174c
+	jr c, .asm_350
+	push bc
+	ld bc, $0080
+	add hl, bc
+	pop bc
+	call Function174c
+	jr nc, .asm_350
+	ld hl, $cee5
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	pop bc
+	ret
+
+.asm_350
+	ld a, $1
+	ld [$cf00], a
+	pop bc
+	ret
+; 0x357
+
+
+Function357: ; 0x357
+	push bc
+	call Function4dd
+	jr nc, .asm_360
+	jp .asm_4b3
+
+.asm_360
+	ld a, $18
+	jr .asm_397
+
+.asm_364
+	push bc
+	call Function4dd
+	jr nc, .asm_36d
+	jp .asm_4b3
+
+.asm_36d
+	push bc
+	ld a, [$ce95]
+	cp $1
+	jr nz, .asm_37a
+	ld a, $d
+	call FarCall_StartMusic
+
+.asm_37a
+	pop bc
+	ld a, $1a
+	jr .asm_397
+
+	push bc
+	call Function4dd
+	jr nc, .asm_388
+	jp .asm_4b3
+
+.asm_388
+	ld a, $19
+	jr .asm_397
+
+.asm_38c
+	push bc
+	call Function4e3
+	jr nc, .asm_395
+	jp .asm_4b3
+
+.asm_395
+	ld a, $1
+
+.asm_397
+	ld hl, $cd4b
+	add hl, bc
+	ld [hl], a
+	ld e, a
+	ld a, c
+	ld [$cee0], a
+	ld a, [$cee1]
+	ld c, a
+	ld b, $0
+	ld a, e
+	cp $18
+	jr z, .asm_3ce
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	and $f
+	ld hl, $04b5
+	call Function2ef
+	ld [wc0d9], a
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	and $f
+	ld hl, $04c5
+	call Function2ef
+	ld [$c0da], a
+	jr .asm_3f8
+
+.asm_3ce
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	and $f
+	srl a
+	srl a
+	ld hl, $04d5
+	call Function2ef
+	ld [wc0d9], a
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	and $f
+	srl a
+	srl a
+	ld hl, $04d9
+	call Function2ef
+	ld [$c0da], a
+	jr .asm_3f8
+
+.asm_3f8
+	ld hl, $cd5a
+	add hl, bc
+	ld a, [hl]
+	ld [wc0cd], a
+	ld hl, $cd69
+	add hl, bc
+	ld a, [hl]
+	ld [wc0cf], a
+	ld hl, $cd78
+	add hl, bc
+	ld a, [hl]
+	ld [$c0d1], a
+	ld hl, $cd87
+	add hl, bc
+	ld a, [hl]
+	ld [$c0d3], a
+	ld a, [$cee0]
+	ld c, a
+	ld b, $0
+	ld a, [wc0d9]
+	ld e, $0
+	bit 7, a
+	jr z, .asm_428
+	dec e
+
+.asm_428
+	ld hl, wc0cd
+	and a
+	add [hl]
+	ld [$cee9], a
+	ld a, [wc0cf]
+	adc e
+	ld [$ceea], a
+	ld hl, $cd5a
+	add hl, bc
+	ld a, [$cee9]
+	ld [hl], a
+	ld hl, $cd69
+	add hl, bc
+	ld a, [$ceea]
+	ld [hl], a
+	ld a, [$c0da]
+	ld e, $0
+	bit 7, a
+	jr z, .asm_451
+	dec e
+
+.asm_451
+	ld hl, $c0d1
+	and a
+	add [hl]
+	ld [$ceeb], a
+	ld a, [$c0d3]
+	adc e
+	ld [$ceec], a
+	ld hl, $cd78
+	add hl, bc
+	ld a, [$ceeb]
+	ld [hl], a
+	ld hl, $cd87
+	add hl, bc
+	ld a, [$ceec]
+	ld [hl], a
+	ld a, [$cee1]
+	ld c, a
+	ld b, $0
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	and $f
+	ld [wc0cd], a
+	ld b, $0
+	ld a, [$cee0]
+	ld c, a
+	ld a, [wc0cd]
+	ld hl, $22b6
+	call Function2ef
+	ld hl, $cdb4
+	add hl, bc
+	ld [hl], a
+	ld a, [wc0cd]
+	ld hl, $22c6
+	call Function2ef
+	ld hl, $cdc3
+	add hl, bc
+	ld [hl], a
+	ld a, [wc0cd]
+	and $f
+	ld hl, $ce86
+	add hl, bc
+	ld [hl], a
+	ld hl, $ce77
+	add hl, bc
+	ld a, $3c
+	ld [hl], a
+
+.asm_4b3
+	pop bc
+	ret
+; 0x4b5
+
+
+INCBIN "baserom.gb", $4b5, $4dd-$4b5
+
+
+Function4dd: ; 0x4dd
+	ld c, $4
+	ld a, $e
+	jr Function4e3.asm_4e7
+
+Function4e3: ; 0x4e3
+	ld c, $1
+	ld a, $3
+
+.asm_4e7
+	ld [$c0d5], a
+	ld b, $0
+.asm_4ec
+	ld hl, $cd4b
+	add hl, bc
+	ld a, [hl]
+	and a
+	jr z, .asm_4fd
+	inc c
+	ld a, [$c0d5]
+	cp c
+	jr nc, .asm_4ec
+	scf
+	ret
+
+.asm_4fd
+	and a
+	ret
+; 0x4ff
 
 
 Function4ff: ; 0x4ff
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], $0
 	inc hl
 	ld [hl], $c0
-	ld a, [$c0dd]
+	ld a, [wc0dd]
 	cp $0
 	jr z, .asm_543
 	ld a, $34
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, $3c
-	ld [$c0cf], a
+	ld [wc0cf], a
 	xor a
 	ld c, $10
 	call Function544
 	ld a, $44
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, $3c
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld a, $1
 	ld c, $10
 	call Function544
 	ld a, $54
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, $3c
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld a, $2
 	ld c, $10
 	call Function544
@@ -188,21 +612,21 @@ Function4ff: ; 0x4ff
 
 
 Function544: ; 0x544
-	ld [$c0c7], a
-	ld hl, $c0c6
+	ld [wc0c7], a
+	ld hl, wc0c6
 	ld [hl], c
 	xor a
 	ld [$cee4], a
 	ld [$cee6], a
-	ld a, [$c0cd]
+	ld a, [wc0cd]
 	ld [$cee3], a
-	ld a, [$c0cf]
+	ld a, [wc0cf]
 	ld [$cee5], a
 	ld a, [$cee3]
 	ld l, a
 	ld a, [$cee4]
 	ld h, a
-	ld a, [$c10f]
+	ld a, [wc10f]
 	ld e, a
 	ld a, [$c110]
 	ld d, a
@@ -224,16 +648,16 @@ Function544: ; 0x544
 	ld [$cee5], a
 	ld a, h
 	ld [$cee6], a
-	ld a, [$c0ca]
+	ld a, [wc0ca]
 	and $80
-	ld [$c0ca], a
+	ld [wc0ca], a
 	call Function15af
 	jp Functione41
 ; 0x59e
 
 
 Function59e: ; 0x59e
-	ld a, [$c0db]
+	ld a, [wc0db]
 	and a
 	jp z, Function71a
 	cp $b
@@ -245,7 +669,7 @@ Function59e: ; 0x59e
 	cp $7
 	jp z, Function701
 	ld a, $0
-	ld [$c0e1], a
+	ld [wc0e1], a
 	call Function2bc1
 	call Function2cea
 .asm_5c2
@@ -253,20 +677,21 @@ Function59e: ; 0x59e
 	jp nc, Function6d0
 	call Function340f
 	ld a, $1
-	ld [$c0ea], a
+	ld [wc0ea], a
 	xor a
 	ld [$cf13], a
 	jr .asm_5c2
 
 .asm_5d6
 	call Functiond5a
-	ld a, [$c0e6]
+	ld a, [wc0e6]
 	dec a
-	ld [$c0e6], a
+	ld [wc0e6], a
 	and a
 	jp nz, .asm_685
+
 	ld a, $3
-	ld [$c0e6], a
+	ld [wc0e6], a
 	call Function17d6
 	call Functiond00
 	ld h, [hl]
@@ -275,18 +700,20 @@ Function59e: ; 0x59e
 	ret nz
 	and a
 	jp z, .asm_61a
+
 	call Function31b3
-	ld a, $81
-	call Function31a4
+	ld a, Sound_81
+	call FarCall_StartMusic
 	ld a, $0
-	ld [$c0e1], a
+	ld [wc0e1], a
 	call Function85f
 	jr nc, .asm_61a
-	ld a, [$c11f]
+
+	ld a, [wLevelNr]
 	inc a
-	ld hl, $c0e9
+	ld hl, SubLevelNr
 	sub [hl]
-	ld [$c11f], a
+	ld [wLevelNr], a
 	ld a, $1
 	ld [hl], a
 	jr .asm_685
@@ -299,35 +726,39 @@ Function59e: ; 0x59e
 	ret
 
 .asm_61f
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 2, [hl]
 	jr nz, .asm_639
-	ld a, [$c0de]
+
+	ld a, [wc0de]
 	inc a
 	cp $ff
 	jr nz, .asm_63f
-	ld a, [$c0df]
+
+	ld a, [wc0df]
 	inc a
-	ld [$c0df], a
+	ld [wc0df], a
 	cp $69
 	jr nz, .asm_61e
 
 .asm_639
 	ld a, $1
-	ld [$c0db], a
+	ld [wc0db], a
 	ret
 
 .asm_63f
-	ld [$c0de], a
+	ld [wc0de], a
 	ret
 
 .asm_643
-	ld a, [$c11f]
-	cp $40
+	ld a, [wLevelNr]
+	cp MaxLevelNr
 	jp nz, .asm_660
-	ld a, $81
-	call Function31a4
-	ld hl, $06c7
+
+	ld a, Sound_81
+	call FarCall_StartMusic
+
+	ld hl, data_6c7
 	ld a, [hl]
 	call Function30f5
 	call Function2f7b
@@ -335,19 +766,19 @@ Function59e: ; 0x59e
 	jp .asm_61a
 
 .asm_660
-	ld a, [$c0e9]
+	ld a, [SubLevelNr]
 	cp $1
 	jr nz, .asm_685
-	ld a, [$c0e8]
+	ld a, [wc0e8]
 	cp $1
 	jr z, .asm_685
-	ld a, $81
-	call Function31a4
-	ld a, [$c0e8]
+	ld a, Sound_81
+	call FarCall_StartMusic
+	ld a, [wc0e8]
 	dec a
 	ld c, a
 	ld b, $0
-	ld hl, $06c7
+	ld hl, data_6c7
 	add hl, bc
 	ld a, [hl]
 	call Function30f5
@@ -356,14 +787,14 @@ Function59e: ; 0x59e
 .asm_685
 	call Function31b3
 	xor a
-	ld [$c0df], a
+	ld [wc0df], a
 	ld a, $9f
-	ld [$c0de], a
+	ld [wc0de], a
 	call Functiond00
 	add [hl]
-	ld a, $3e
+	ld a, Sound_3e
 	add e
-	call Function31a4
+	call FarCall_StartMusic
 	call Function2b2b
 	call Function1823
 	call Function206d
@@ -373,43 +804,49 @@ Function59e: ; 0x59e
 	call Functiond0a
 	ld h, h
 	dec bc
-	ld a, [$c11f]
+
+	ld a, [wLevelNr]
 	and $3
 	ld c, a
 	ld b, $0
-	ld hl, $0cc9
+	ld hl, BGMLoopOrder
 	add hl, bc
 	ld a, [hl]
-	call Function31a4
+	call FarCall_StartMusic
+
 	xor a
-	ld [$c0db], a
+	ld [wc0db], a
+
 	ret
 ; 0x6c7
 
 
-INCBIN "baserom.gb", $6c7, $6d0-$6c7
+data_6c7: ; 0x6c7
+db 8, 5, 6, 7, 3, 4, 1, 2, 8
 
 
 Function6d0: ; 0x6d0
 	call Function31b3
-	ld a, [$c11f]
+	ld a, [wLevelNr]
 	push af
-	ld a, $40
-	ld [$c11f], a
+
+	ld a, MaxLevelNr
+	ld [wLevelNr], a
 	call Functiond0a
 	db $f4
 	ld a, [bc]
 	ld a, $1
-	ld [$c0df], a
+	ld [wc0df], a
 	ld a, $9a
-	ld [$c0de], a
+	ld [wc0de], a
 	call Function2dff
+
 	pop af
-	ld [$c11f], a
+	ld [wLevelNr], a
 	xor a
 	call Function30f5
-	ld a, $81
-	call Function31a4
+	ld a, Sound_81
+	call FarCall_StartMusic
 	call Function2f7b
 	jp Function59e.asm_685
 ; 0x701
@@ -420,11 +857,11 @@ Function701: ; 0x701
 	jr nc, .asm_70e
 .asm_706
 	ld a, $b
-	ld [$c0db], a
+	ld [wc0db], a
 	jp Function59e
 
 .asm_70e
-	ld hl, HoldInputs
+	ld hl, hHoldInputs
 	bit 2, [hl]
 	jr nz, .asm_706
 	bit 3, [hl]
@@ -434,21 +871,21 @@ Function701: ; 0x701
 
 
 Function71a: ; 0x71a
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 3, [hl]
 	jr z, .asm_742
-	ld hl, HoldInputs
+	ld hl, hHoldInputs
 	bit 2, [hl]
 	jr z, .asm_731
-	ld a, [$c0dd]
+	ld a, [wc0dd]
 	and a
 	jr nz, .asm_731
 	jp .asm_7b3
 
 .asm_731
-	ld a, [$c0dd]
+	ld a, [wc0dd]
 	xor $1
-	ld [$c0dd], a
+	ld [wc0dd], a
 	and a
 	jr z, .asm_73f
 	jp Function31c4
@@ -460,38 +897,38 @@ Function71a: ; 0x71a
 	ld a, [$c11b]
 	and a
 	jr z, .asm_789
-	ld a, [$c0dd]
+	ld a, [wc0dd]
 	cp $1
 	jr z, .asm_789
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 2, [hl]
 	jr z, .asm_789
-	ld hl, HoldInputs
+	ld hl, hHoldInputs
 	bit 6, [hl]
 	jr z, .asm_789
 	ld a, $b
-	ld [$c0db], a
-	ld hl, HoldInputs
+	ld [wc0db], a
+	ld hl, hHoldInputs
 	bit 0, [hl]
 	jr nz, .asm_76c
-	jp Function803
+	jp IncreaseLevelNr
 
 .asm_76c
-	ld a, [$c0e8]
+	ld a, [wc0e8]
 	inc a
 	cp $9
 	jr nz, .asm_776
 	ld a, $1
 
 .asm_776
-	ld [$c0e8], a
+	ld [wc0e8], a
 	dec a
 	sla a
 	sla a
 	sla a
-	ld [$c11f], a
+	ld [wLevelNr], a
 	ld a, $1
-	ld [$c0e9], a
+	ld [SubLevelNr], a
 	ret
 
 .asm_789
@@ -501,18 +938,18 @@ Function71a: ; 0x71a
 	ret
 
 .asm_791
-	ld a, [$c104]
+	ld a, [wc104]
 	and $3f
 	jr nz, .asm_7e8
-	ld a, [$c0dd]
+	ld a, [wc0dd]
 	cp $0
 	jr nz, .asm_7e8
-	ld a, [$c0dc]
+	ld a, [wc0dc]
 	dec a
 	daa
 	cp $0
 	jr nz, .asm_7e5
-	ld [$c0dc], a
+	ld [wc0dc], a
 	ld a, [$ce95]
 	cp $2
 	jr nz, .asm_7b3
@@ -520,33 +957,33 @@ Function71a: ; 0x71a
 
 .asm_7b3
 	ld a, $5
-	ld [$c0db], a
+	ld [wc0db], a
 	xor a
-	ld [$c0de], a
-	ld [$c0df], a
+	ld [wc0de], a
+	ld [wc0df], a
 	ld [$cd4c], a
 	ld [$cd4d], a
 	ld [$cd4e], a
-	ld a, [$c0e5]
+	ld a, [wc0e5]
 	and a
 	jr nz, .asm_7db
 	ld a, $0
-	ld [$c11f], a
+	ld [wLevelNr], a
 	ld a, $1
-	ld [$c0e8], a
-	ld [$c0e9], a
+	ld [wc0e8], a
+	ld [SubLevelNr], a
 
 .asm_7db
-	ld a, $15
-	call Function31a4
-	ld a, $85
-	jp Function31a4
+	ld a, Sound_15
+	call FarCall_StartMusic
+	ld a, Sound_85
+	jp FarCall_StartMusic
 
 .asm_7e5
-	ld [$c0dc], a
+	ld [wc0dc], a
 
 .asm_7e8
-	ld a, [$caf6]
+	ld a, [wcaf6]
 	and a
 	jr nz, .asm_802
 	ld a, [$ce95]
@@ -554,61 +991,79 @@ Function71a: ; 0x71a
 	jr z, .asm_802
 	ld a, $2
 	ld [$ce95], a
-	call Function803
-	ld a, $84
-	jp Function31a4
+	call IncreaseLevelNr
+	ld a, Sound_84
+	jp FarCall_StartMusic
 
 .asm_802
 	ret
 ; 0x803
 
 
-Function803: ; 0x803
-	ld a, [$c11f]
-	cp $40
+IncreaseLevelNr: ; 0x803
+	ld a, [wLevelNr]
+	cp MaxLevelNr
 	jr z, .asm_824
+
 	inc a
-	ld [$c11f], a
-	ld a, [$c0e9]
+	ld [wLevelNr], a
+
+	ld a, [SubLevelNr]
 	inc a
 	cp $9
 	jr nz, .asm_821
-	ld hl, $c0e8
+
+	ld hl, wc0e8
 	inc [hl]
 	ld e, $20
 	call Function2006
 	ld a, $1
 
 .asm_821
-	ld [$c0e9], a
+	ld [SubLevelNr], a
 
 .asm_824
 	ret
 ; 0x825
 
 
-INCBIN "baserom.gb", $825, $83d-$825
+Function825: ; 0x825
+	ld a, [wLevelNr]
+	dec a
+	ld [wLevelNr], a
+	ld a, [SubLevelNr]
+	dec a
+	and a
+	jr nz, .asm_839
+	ld hl, wc0e8
+	dec [hl]
+	ld a, $8
+
+.asm_839
+	ld [SubLevelNr], a
+	ret
+; 0x83d
 
 
 Function83d: ; 0x83d
-	ld a, [$c0de]
+	ld a, [wc0de]
 	and a
 	jr z, .asm_84c
 	dec a
 	and a
 	jr z, .asm_84c
-	ld [$c0de], a
+	ld [wc0de], a
 	and a
 	ret
 
 .asm_84c
-	ld a, [$c0df]
+	ld a, [wc0df]
 	and a
 	jr z, .asm_85d
 	dec a
-	ld [$c0df], a
+	ld [wc0df], a
 	ld a, $ff
-	ld [$c0de], a
+	ld [wc0de], a
 	and a
 	ret
 
@@ -623,30 +1078,30 @@ Function85f: ; 0x85f
 	call Function2ce0
 
 Function865: ; 0x865
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], $0
 	inc hl
 	ld [hl], $c0
 	ld a, $1
-	ld [$c10e], a
+	ld [wc10e], a
 	call ReadInputs
 	ld a, $4a
-	ld [$c0cd], a
-	ld a, [$c0e1]
+	ld [wc0cd], a
+	ld a, [wc0e1]
 	cp $1
 	jr z, .asm_886
 	ld a, $a
-	ld [$c0cd], a
+	ld [wc0cd], a
 
 .asm_886
 	ld a, $7
-	ld [$c0cf], a
-	ld a, [$c104]
+	ld [wc0cf], a
+	ld a, [wc104]
 	and $10
 	jr z, .asm_89e
 	xor a
 	ld c, $9
-	ld a, [$c0ea]
+	ld a, [wc0ea]
 	and a
 	jr nz, .asm_89e
 	call Function544
@@ -654,19 +1109,19 @@ Function865: ; 0x865
 .asm_89e
 	call Function2c3e
 	call Function2b6f
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 5, [hl]
 	jp nz, .asm_8bb
 	bit 4, [hl]
 	jr z, .asm_8c6
-	ld hl, $c0e1
+	ld hl, wc0e1
 	ld [hl], $1
 	ld hl, $cf13
 	inc [hl]
 	jr .asm_903
 
 .asm_8bb
-	ld hl, $c0e1
+	ld hl, wc0e1
 	ld [hl], $0
 	ld hl, $cf13
 	dec [hl]
@@ -676,10 +1131,10 @@ Function865: ; 0x865
 	ld bc, $0000
 	ld a, [$cf13]
 	ld c, a
-	ld a, [$c104]
+	ld a, [wc104]
 	and $7
 	jr nz, .asm_903
-	ld hl, HoldInputs
+	ld hl, hHoldInputs
 	bit 7, [hl]
 	jr z, .asm_8ee
 	ld hl, $cf0f
@@ -714,7 +1169,7 @@ Function865: ; 0x865
 	ld [hl], a
 
 .asm_903
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 2, [hl]
 	jr nz, .asm_91a
 	bit 3, [hl]
@@ -725,30 +1180,30 @@ Function865: ; 0x865
 	jp Function865
 
 .asm_91a
-	ld a, [$c0ea]
+	ld a, [wc0ea]
 	and a
-	jr nz, .asm_93b
-	ld a, [$c0e1]
+	jr nz, .checkPassword
+	ld a, [wc0e1]
 	cp $0
 	jr z, .asm_932
-	ld a, [$c0e5]
+	ld a, [wc0e5]
 	sub $1
 	daa
-	ld [$c0e5], a
+	ld [wc0e5], a
 	scf
 	ret
 
 .asm_932
 	xor a
-	ld [$c0ea], a
+	ld [wc0ea], a
 	ld [$c0eb], a
 	and a
 	ret
 
-.asm_93b
+.checkPassword
 	ld bc, $0001
-.asm_93e
-	ld hl, data_359f
+.passwordLoop
+	ld hl, PasswordStrings
 	add hl, bc
 	add hl, bc
 	ld a, [hl]
@@ -758,53 +1213,60 @@ Function865: ; 0x865
 	ld a, [$cf0f]
 	add $41
 	cp [hl]
-	jr nz, .asm_987
+	jr nz, .checkNextPassword
+
 	inc hl
 	ld a, [$cf10]
 	add $41
 	cp [hl]
-	jr nz, .asm_987
+	jr nz, .checkNextPassword
+
 	inc hl
 	ld a, [$cf11]
 	add $41
 	cp [hl]
-	jr nz, .asm_987
+	jr nz, .checkNextPassword
+
 	inc hl
 	ld a, [$cf12]
 	add $41
 	cp [hl]
-	jr nz, .asm_987
+	jr nz, .checkNextPassword
+
 	ld a, c
 	cp $8
 	jr nz, .asm_975
+
 	ld a, $1
 	ld [$c11b], a
-	xor a
 
+	xor a
 .asm_975
 	inc a
-	ld [$c0e8], a
+	ld [wc0e8], a
 	dec a
-	add a
-	add a
-	add a
-	ld [$c11f], a
+	add a ; *2
+	add a ; *4
+	add a ; *8
+	ld [wLevelNr], a
+
 	ld a, $1
-	ld [$c0e9], a
+	ld [SubLevelNr], a
 	jr .asm_932
 
-.asm_987
+.checkNextPassword
 	inc bc
 	ld a, c
 	cp $a
-	jr nz, .asm_93e
+	jr nz, .passwordLoop
+
 	call Function33fe
 	ld a, $0
-	ld [$c0e1], a
+	ld [wc0e1], a
 	ld a, $1
 	ld [$c0eb], a
 	xor a
-	ld [$c0ea], a
+	ld [wc0ea], a
 	jp Function865
 ; 0x9a1
 
@@ -837,7 +1299,7 @@ Function9a1: ; 0x9a1
 Function9ba: ; 0x9ba
 	xor a
 	ld [$cf0a], a
-	ld hl, $0a48
+	ld hl, data_a48
 	ld a, l
 	ld [$cf14], a
 	ld a, h
@@ -847,9 +1309,9 @@ Function9ba: ; 0x9ba
 	ld a, $2
 	ld [$cf09], a
 	xor a
-	ld [$c0df], a
+	ld [wc0df], a
 	ld a, $af
-	ld [$c0de], a
+	ld [wc0de], a
 	call Functiond00
 	xor l
 	ld a, $cd
@@ -858,7 +1320,7 @@ Function9ba: ; 0x9ba
 	call Function2ce5
 .asm_9e7
 	ld a, $1
-	ld [$c10e], a
+	ld [wc10e], a
 	call Function3180
 	call ReadInputs
 	call Function83d
@@ -877,7 +1339,7 @@ Function9ba: ; 0x9ba
 	jr z, .asm_a47
 	inc hl
 	ld a, [hli]
-	ld [$c0df], a
+	ld [wc0df], a
 	ld a, [hl]
 	ld [$cf08], a
 	jr .asm_a28
@@ -904,7 +1366,7 @@ Function9ba: ; 0x9ba
 	call Function2c3e
 	call Function2b6f
 	call Function17d6
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], $0
 	inc hl
 	ld [hl], $c0
@@ -916,19 +1378,50 @@ Function9ba: ; 0x9ba
 ; 0xa48
 
 
+data_a48: ; 0xa48
 INCBIN "baserom.gb", $a48, $a8a-$a48
 
 
 Functiona8a: ; 0xa8a
 	xor a
-	ld [$c0db], a
+	ld [wc0db], a
 	ld a, $45
-	ld [$c0dc], a
+	ld [wc0dc], a
 	ret
 ; 0xa94
 
 
-INCBIN "baserom.gb", $a94, $abf-$a94
+Functiona94: ; 0xa94
+	push bc
+	call Function15d9
+	pop bc
+	jr z, .asm_abe
+	ld hl, $cd4b
+	add hl, bc
+	ld a, [hl]
+	cp $15
+	jr nc, .asm_ab0
+	cp $9
+	jr c, .asm_ab0
+	ld hl, $ce59
+	add hl, bc
+	ld a, [hl]
+	and a
+	jr nz, .asm_abe
+
+.asm_ab0
+	ld hl, $cd4b
+	add hl, bc
+	xor a
+	ld [hl], a
+	ld hl, $ce0e
+	add hl, bc
+	ld a, [hl]
+	call Function1738
+
+.asm_abe
+	ret
+; 0xabf
 
 
 Functionabf: ; 0xabf
@@ -950,7 +1443,282 @@ Functionabf: ; 0xabf
 ; 0xae3
 
 
-INCBIN "baserom.gb", $ae3, $ccd-$ae3
+Functionae3: ; 0xae3
+	ret
+; 0xae4
+
+
+Functionae4: ; 0xae4
+	ld hl, $caf8
+	ld c, $ff
+.asm_ae9
+	ld a, [hl]
+	cp $2
+	jr nz, .asm_aef
+	dec a
+
+.asm_aef
+	ld [hli], a
+	dec c
+	jr nz, .asm_ae9
+	ret
+; 0xaf4
+
+
+Functionaf4: ; 0xaf4
+	xor a
+	ld [wc10c], a
+	ld a, $8f
+	ld [$c0b4], a
+	call Functionb64.asm_b76
+	ld hl, wc10f
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, $ff
+	ld c, $b9
+	add hl, bc
+	ld a, l
+	ld [$cee3], a
+	ld a, h
+	ld [$cee4], a
+	ld hl, $c111
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, $0
+	ld c, $86
+	add hl, bc
+	ld a, l
+	ld [$cee5], a
+	ld a, h
+	ld [$cee6], a
+	ld bc, $0000
+	call Function1794
+	ld hl, wc10f
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, $ff
+	ld c, $bc
+	add hl, bc
+	ld a, l
+	ld [$cee3], a
+	ld a, h
+	ld [$cee4], a
+	ld hl, $c111
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, $0
+	ld c, $86
+	add hl, bc
+	ld a, l
+	ld [$cee5], a
+	ld a, h
+	ld [$cee6], a
+	ld bc, $0001
+	call Function1794
+	ld a, $64
+	ld [$ce77], a
+	xor a
+	ld [$cde1], a
+	jp Function2e6f
+; 0xb64
+
+
+Functionb64: ; 0xb64
+	ld a, $1
+	ld [$cf38], a
+	xor a
+	ld [wc10c], a
+	ld a, $7f
+	ld [$c0b4], a
+	xor a
+	ld [$c11a], a
+
+.asm_b76
+	call Function31b3
+	ld b, $0
+	ld a, [wLevelNr]
+	add a
+	and a
+	add a
+	jr nc, .asm_b84
+	inc b
+
+.asm_b84
+	ld c, a
+	push bc
+	ld hl, $3bba
+	add hl, bc
+	ld a, [hli]
+	ld [MBC1RomBank], a
+	inc hl
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, [hli]
+	inc a
+	ld [$ccfb], a
+	ld a, [hli]
+	inc a
+	ld [$ccfc], a
+	ld hl, $3ab6
+	add hl, bc
+	ld a, [hli]
+	ld [MBC1RomBank], a
+	inc hl
+	ld a, [hli]
+	ld d, [hl]
+	ld e, a
+	call Function13d7
+	pop bc
+	ld hl, $3cbe
+	add hl, bc
+	ld a, [hli]
+	ld [wcaf2], a
+	ld a, [hli]
+	ld [wcaf1], a
+	ld a, [hli]
+	ld [$caf3], a
+	ld a, [hl]
+	ld [$caf4], a
+	ld hl, $39b2
+	add hl, bc
+	ld a, [hli]
+	push bc
+	ld [MBC1RomBank], a
+	ld de, $c123
+	inc hl
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld bc, $000a
+	call asm_cee.asm_cf3
+	pop bc
+	ld hl, $37aa
+	add hl, bc
+	ld a, [hli]
+	ld [wc120], a
+	inc hl
+	ld a, [hli]
+	ld [$c121], a
+	ld a, [hl]
+	ld [$c122], a
+	ld h, b
+	ld l, c
+	ld de, $38ae
+	call Function141c
+	ld a, $e9
+	ld [$c0ac], a
+	ld [$c0c5], a
+	call Function12e5
+	ld hl, $cefc
+	ld a, [hli]
+	or [hl]
+	ld hl, $cefc
+	ld [hl], $20
+	inc hl
+	ld [hl], $0
+	ld a, [$ccfc]
+	ld e, a
+	ld d, $0
+	ld a, [$c12d]
+	ld b, a
+	ld hl, $c12e
+	ld a, [$ccff]
+	ld c, a
+.asm_c19
+	add hl, de
+	ld a, c
+	add $20
+	ld c, a
+	ld a, [hl]
+	cp b
+	jr z, .asm_c19
+	ld b, $0
+	ld hl, $cefe
+	ld [hl], c
+	inc hl
+	ld [hl], b
+	ld hl, $cefc
+	ld de, wc10f
+	ld bc, $0004
+	call asm_cee.asm_cf3
+	ld a, [$cefc]
+	add $50
+	ld [$cefc], a
+	ld a, [$cefd]
+	adc $0
+	ld [$cefd], a
+	xor a
+	ld [$cd69], a
+	ld a, $20
+	ld [$cd5a], a
+	ld a, [$cefe]
+	add $30
+	ld [$cd78], a
+	ld [$cefe], a
+	ld a, [$ceff]
+	adc $0
+	ld [$cd87], a
+	ld [$ceff], a
+	ld a, [wLevelNr]
+	cp $40
+	jr z, .asm_c6e
+	jr .asm_c9f
+
+.asm_c6e
+	ld h, $0
+	ld l, $0
+	ld b, $1
+	ld c, $50
+	add hl, bc
+	ld a, l
+	ld [wc10f], a
+	ld a, h
+	ld [$c110], a
+	ld h, $0
+	ld l, $0
+	ld b, $0
+	ld c, $60
+	add hl, bc
+	ld a, l
+	ld [$c111], a
+	ld a, h
+	ld [$c112], a
+	ld bc, $0000
+	ld de, $0064
+	call Functionded
+	call Functionef5
+	jp .asm_cb7
+
+.asm_c9f
+	ld hl, $0024
+	call Function3fdf
+	ld bc, $0000
+	ld de, $0000
+	call Functionded
+	call Functionef5
+	call Function163a
+	call Function17eb
+
+.asm_cb7
+	ld a, $2
+	ld [$cef1], a
+	ld a, $7
+	ld [rIE], a
+	ld a, $8f
+	ld [rLYC], a
+	ld a, $40
+	ld [rSTAT], a
+	ret
+; 0xcc9
+
+
+BGMLoopOrder: ; 0xcc9
+db Sound_81, Sound_82, Sound_80, Sound_82
 
 
 Functionccd: ; 0xccd
@@ -983,6 +1751,7 @@ asm_cee:
 	ld a, b
 	or c
 	ret z
+
 	ld a, [hli]
 	ld [de], a
 	inc de
@@ -995,7 +1764,7 @@ asm_cee:
 Functiond00: ; 0xd00
 	call Functiond5a
 	ld a, $1
-	ld [$c10c], a
+	ld [wc10c], a
 	jr asm_d0d
 
 Functiond0a: ; 0xd0a
@@ -1027,7 +1796,7 @@ asm_d0d:
 	ld a, [hli]
 	ld d, a
 	push hl
-	ld bc, $0d44
+	ld bc, data_d44
 	push bc
 	ld h, d
 	ld l, e
@@ -1035,57 +1804,138 @@ asm_d0d:
 ; 0xd44
 
 
+data_d44: ; 0xd44
 INCBIN "baserom.gb", $d44, $d5a-$d44
 
 
 Functiond5a: ; 0xd5a
-.asm_d5a
-	ld a, [$c10b]
+	ld a, [wc10b]
 	or a
 	ret z
 	dec a
-	ld [$c10b], a
+	ld [wc10b], a
 	ld e, a
 	ld d, $0
-	ld a, [$c10c]
+	ld a, [wc10c]
 	and a
 	jp nz, .asm_d79
 	ld hl, data_d9a
 	add hl, de
 	ld a, [hl]
 	ld [rBGP], a
-	ld hl, $0d9e
+	ld hl, data_d9e
 	jr .asm_d83
 
 .asm_d79
-	ld hl, $0da2
+	ld hl, data_da2
 	add hl, de
 	ld a, [hl]
 	ld [rBGP], a
-	ld hl, $0da6
+	ld hl, data_da6
 
 .asm_d83
 	add hl, de
 	ld a, [hl]
 	ld [rOBP0], a
 	ld [rOBP1], a
+
 	ld b, $3
-	ld hl, $c103
+	ld hl, wc103
 .asm_d8e
 	ld a, [hl]
 .asm_d8f
 	call Function3180
 	cp [hl]
 	jr z, .asm_d8f
+
 	dec b
 	jr nz, .asm_d8e
-	jr .asm_d5a
+
+	jr Functiond5a
 ; 0xd9a
 
+
 data_d9a:
+db 0, $40, $90, $E4
+data_d9e:
+db 0, $40, $80, $D0
+data_da2:
+db 0, $01, $42, $93
+data_da6:
+db 0, 1, 2, 7
 
 
-INCBIN "baserom.gb", $d9a, $e41-$d9a
+INCBIN "baserom.gb", $daa, $ded-$daa
+
+
+Functionded: ; 0xded
+	xor a
+	ld [$c0ac], a
+	ld hl, $3dc2
+	add hl, de
+	ld e, l
+	ld d, h
+	ld hl, $c0b5
+	add hl, bc
+	ld a, [de]
+	inc de
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld hl, $c0b8
+	add hl, bc
+	ld a, [de]
+	inc de
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld hl, $c0bb
+	add hl, bc
+	ld a, [de]
+	inc de
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	call Function3180
+	ld hl, $c0be
+	add hl, bc
+	ld a, [de]
+	inc de
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	ld [MBC1RomBank], a
+	inc de
+	inc de
+	ld a, [de]
+	inc de
+	ld l, a
+	ld a, [de]
+	ld d, a
+	ld e, l
+	jp Function12e5
+; 0xe41
 
 
 Functione41: ; 0xe41
@@ -1094,7 +1944,7 @@ Functione41: ; 0xe41
 	ld a, c
 	ld hl, $c0c3
 	ld [hl], e
-	ld a, [$c0c6]
+	ld a, [wc0c6]
 	ld e, a
 	ld d, $0
 	ld hl, $c0b5
@@ -1106,7 +1956,7 @@ Functione41: ; 0xe41
 	ld l, a
 	add hl, de
 	ld a, [hl]
-	ld hl, $c0c7
+	ld hl, wc0c7
 	add [hl]
 	ld e, a
 	ld hl, $c0bb
@@ -1142,7 +1992,7 @@ Functione41: ; 0xe41
 	add hl, de
 	pop af
 	ld b, a
-	ld a, [$c0c1]
+	ld a, [wc0c1]
 	ld e, a
 	ld a, [$c0c2]
 	ld d, a
@@ -1151,7 +2001,7 @@ Functione41: ; 0xe41
 	cp $a0
 	ret nc
 	push bc
-	ld a, [$c0ca]
+	ld a, [wc0ca]
 	ld b, a
 	ld a, [$c0c9]
 	ld c, a
@@ -1189,7 +2039,7 @@ Functione41: ; 0xe41
 	pop bc
 	dec b
 	jr nz, .asm_e98
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], e
 	inc hl
 	ld [hl], d
@@ -1199,10 +2049,12 @@ Functione41: ; 0xe41
 
 Functioned3: ; 0xed3
 	push af
+
 	ld a, $ff
 .asm_ed6
 	dec a
 	push af
+
 	ld a, $ff
 .asm_eda
 	nop
@@ -1211,10 +2063,12 @@ Functioned3: ; 0xed3
 	dec a
 	cp $0
 	jr nz, .asm_eda
+
 	call Function3180
 	pop af
 	cp $0
 	jr nz, .asm_ed6
+
 	pop af
 	ret
 ; 0xeec
@@ -1227,11 +2081,63 @@ Functioneec: ; 0xeec
 ; 0xef5
 
 
-INCBIN "baserom.gb", $ef5, $f5d-$ef5
+Functionef5: ; 0xef5
+	call Functionf5d
+	ld hl, $c11d
+	dec [hl]
+	ld hl, $c11e
+	dec [hl]
+	ld b, $8
+.asm_f02
+	call Functionf8a
+	ld c, $8
+.asm_f07
+	push hl
+	ld a, [hl]
+	call Functionfa9
+	push hl
+	ld a, [$c11e]
+	and $7
+	add a
+	ld l, a
+	ld h, $0
+	ld de, data_f45
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, [$c11d]
+	and $7
+	add a
+	add a
+	ld e, a
+	ld d, $0
+	add hl, de
+	pop de
+	call Functionfbe
+	ld hl, $c11d
+	inc [hl]
+	pop hl
+	inc hl
+	dec c
+	jr nz, .asm_f07
+	ld a, [$c11d]
+	sub $8
+	ld [$c11d], a
+	ld hl, $c11e
+	inc [hl]
+	dec b
+	jr nz, .asm_f02
+	ret
+; 0xf45
+
+
+data_f45: ; 0xf45
+INCBIN "baserom.gb", $f45, $f5d-$f45
 
 
 Functionf5d: ; 0xf5d
-	ld hl, $c10f
+	ld hl, wc10f
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -1302,7 +2208,92 @@ Functionfa9: ; 0xfa9
 ; 0xfbe
 
 
-INCBIN "baserom.gb", $fbe, $101e-$fbe
+Functionfbe: ; 0xfbe
+	ld a, [wc120]
+	ld [MBC1RomBank], a
+	push bc
+	ld bc, $001c
+	ld a, [$c0c5]
+	ld b, a
+	ld c, $1c
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, b
+	ld b, $0
+	add hl, bc
+	ld b, a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, b
+	ld b, $0
+	add hl, bc
+	ld b, a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, b
+	ld b, $0
+	add hl, bc
+	ld b, a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	inc de
+	ld [hli], a
+	ld a, [de]
+	add b
+	ld [hl], a
+	pop bc
+	ret
+; 0x101e
 
 
 Function101e: ; 0x101e
@@ -1313,7 +2304,7 @@ Function101e: ; 0x101e
 	jp z, Function10c0
 	cp $2
 	jr z, .asm_1064
-	ld a, [$c10f]
+	ld a, [wc10f]
 	dec a
 	and $1f
 	add c
@@ -1345,7 +2336,7 @@ Function101e: ; 0x101e
 	ld a, [$cd02]
 	or a
 	ret z
-	ld a, [$c10f]
+	ld a, [wc10f]
 	and $1f
 	ret z
 	ld c, a
@@ -1354,7 +2345,7 @@ Function101e: ; 0x101e
 	ret
 
 .asm_1064
-	ld a, [$c10f]
+	ld a, [wc10f]
 	and $1f
 	sub c
 	jr c, .asm_1072
@@ -1373,7 +2364,7 @@ Function101e: ; 0x101e
 	ld a, [$cd02]
 	or a
 	ret z
-	ld a, [$c10f]
+	ld a, [wc10f]
 	and $1f
 	ret
 
@@ -1458,7 +2449,7 @@ Function10e4: ; 0x10e4
 	cp $2
 	jr z, .asm_1108
 	ld e, $5
-	ld a, [$c10f]
+	ld a, [wc10f]
 	and $1f
 	jr z, .asm_10ff
 	inc e
@@ -1519,7 +2510,7 @@ Function10e4: ; 0x10e4
 
 .asm_1146
 	ld b, $5
-	ld a, [$c10f]
+	ld a, [wc10f]
 	and $1f
 	jr z, .asm_1150
 	inc b
@@ -1576,7 +2567,7 @@ Function115e: ; 0x115e
 	add a
 	ld e, a
 	ld d, $0
-	ld hl, $0f45
+	ld hl, data_f45
 	add hl, de
 	ld a, [hli]
 	ld b, [hl]
@@ -1629,7 +2620,7 @@ Function11c3: ; 0x11c3
 
 .asm_11e0
 	ld b, $7
-	ld a, [$c10f]
+	ld a, [wc10f]
 	and $1f
 	jr z, .asm_11ea
 	inc b
@@ -1650,7 +2641,7 @@ Function11c3: ; 0x11c3
 	add a
 	ld e, a
 	ld d, $0
-	ld hl, $0f45
+	ld hl, data_f45
 	add hl, de
 	ld a, [hli]
 	ld b, [hl]
@@ -1700,7 +2691,45 @@ Function1227: ; 0x1227
 ; 0x1240
 
 
-INCBIN "baserom.gb", $1240, $1277-$1240
+Function1240: ; 0x1240
+	xor a
+	ld [$c118], a
+	ld a, $2
+.asm_1246
+	ld [$c119], a
+	ld hl, $cd26
+	ld a, [hl]
+	sub $1
+	jr c, .asm_126e
+.asm_1251
+	ld [hli], a
+	add a
+	add a
+	ld e, a
+	ld d, $0
+	add hl, de
+	ld a, [hli]
+	ld e, a
+	ld a, [hli]
+	ld d, a
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call Functionfbe
+	ld a, $1
+	ld [$c118], a
+	ld a, [$c119]
+	dec a
+	jr nz, .asm_1246
+	ret
+
+.asm_126e
+	ld hl, $cd05
+	ld a, [hl]
+	sub $1
+	jr nc, .asm_1251
+	ret
+; 0x1277
 
 
 ReadInputs: ; 0x1277
@@ -1725,17 +2754,17 @@ ReadInputs: ; 0x1277
 	and $f
 	or b
 	ld c, a
-	ld a, [HoldInputs]
+	ld a, [hHoldInputs]
 	xor c
 	and c
-	ld [CurInputs], a
+	ld [hCurInputs], a
 	ld a, c
-	ld [HoldInputs], a
+	ld [hHoldInputs], a
 
 	ld a, $30
 	ld [rJOYP], a
 
-	ld a, [HoldInputs]
+	ld a, [hHoldInputs]
 	and $f
 	cp $f
 	ret nz
@@ -1748,7 +2777,7 @@ ReadInputs: ; 0x1277
 Function12b4: ; 0x12b4
 	ld c, $80
 	ld b, $a
-	ld hl, $12c2
+	ld hl, data_12c2
 .asm_12bb
 	ld a, [hli]
 	ld [$ff00+c], a
@@ -1759,7 +2788,8 @@ Function12b4: ; 0x12b4
 ; 0x12c2
 
 
-INCBIN "baserom.gb", $12c2, $12cc-$12c2
+data_12c2: ; 0x12c2
+db $3E, $C0, $E0, $46, $3E, $28, $3D, $20, $FD, $C9
 
 
 Function12cc: ; 0x12cc
@@ -1785,12 +2815,492 @@ Function12cc: ; 0x12cc
 ; 0x12e5
 
 
-INCBIN "baserom.gb", $12e5, $15af-$12e5
+Function12e5: ; 0x12e5
+	ld a, [de]
+	cp $ff
+	ret z
+	ld [$c0a7], a
+	cp $0
+	jr z, .asm_1314
+	cp $4
+	jr z, .asm_1309
+	cp $1
+	jr z, .asm_1302
+	ld hl, $c0b0
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, $20
+	jr .asm_1329
+
+.asm_1302
+	ld hl, VBGMap0
+	ld a, $20
+	jr .asm_1329
+
+.asm_1309
+	ld bc, v8000
+	ld a, [$c0ac]
+	ld [$c0ab], a
+	jr .asm_131f
+
+.asm_1314
+	ld bc, v8800
+	ld a, [$c0ac]
+	ld [$c0ab], a
+	add $80
+
+.asm_131f
+	ld l, a
+	ld h, $0
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, bc
+	ld a, $10
+
+.asm_1329
+	ld [$c0a6], a
+	ld a, l
+	ld [$c0a2], a
+	ld [$c0a4], a
+	ld a, h
+	ld [$c0a3], a
+	ld [$c0a5], a
+	inc de
+	inc de
+	inc de
+	ld a, [de]
+	ld [$c0a9], a
+	ld [$c0aa], a
+	inc de
+	ld a, [de]
+	ld [$c0a8], a
+	inc de
+	ld hl, $c0a4
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+.asm_1350
+	ld a, [de]
+	and $7f
+	ld [$c0ae], a
+	ld a, [de]
+	and $80
+	ld [$c0ad], a
+	inc de
+.asm_135d
+	ld a, [$c0a7]
+	cp $1
+	jr z, .asm_1368
+	cp $5
+	jr nz, .asm_1370
+
+.asm_1368
+	ld a, [$c0ab]
+	ld b, a
+	ld a, [de]
+	add b
+	jr .asm_1371
+
+.asm_1370
+	ld a, [de]
+
+.asm_1371
+	ld [hli], a
+	call Function3180
+	ld a, [$c0ad]
+	cp $0
+	jr z, .asm_137d
+	inc de
+
+.asm_137d
+	ld a, [$c0aa]
+	sub $1
+	ld [$c0aa], a
+	jr nc, .asm_13bb
+	ld hl, $c0a2
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, [$c0a6]
+	ld c, a
+	ld b, $0
+	add hl, bc
+	ld a, l
+	ld [$c0a2], a
+	ld a, h
+	ld [$c0a3], a
+	ld a, [$c0a9]
+	ld [$c0aa], a
+	ld a, [$c0a8]
+	dec a
+	ld [$c0a8], a
+	ld a, [$c0a7]
+	cp $0
+	jr z, .asm_13b4
+	cp $4
+	jr nz, .asm_13bb
+
+.asm_13b4
+	ld a, [$c0ac]
+	inc a
+	ld [$c0ac], a
+
+.asm_13bb
+	ld a, [$c0ae]
+	dec a
+	ld [$c0ae], a
+	jr nz, .asm_135d
+	ld a, [$c0ad]
+	cp $0
+	jr nz, .asm_13cc
+	inc de
+
+.asm_13cc
+	ld a, [$c0a8]
+	cp $ff
+	jp nz, .asm_1350
+	jp Function12e5
+; 0x13d7
+
+
+Function13d7: ; 0x13d7
+	ld hl, $c12d
+.asm_13da
+	ld a, [de]
+	cp $ff
+	ret z
+	ld a, [de]
+	and $7f
+	ld [$c0ae], a
+	ld a, [de]
+	and $80
+	ld [$c0ad], a
+	inc de
+.asm_13eb
+	ld a, [de]
+	ld [hli], a
+	call Function3180
+	ld a, [$c0ad]
+	cp $0
+	jr z, .asm_13f8
+	inc de
+
+.asm_13f8
+	ld a, [$c0ae]
+	dec a
+	ld [$c0ae], a
+	jr nz, .asm_13eb
+	ld a, [$c0ad]
+	cp $0
+	jr nz, .asm_1409
+	inc de
+
+.asm_1409
+	jr .asm_13da
+; 0x140b
+
+
+Function140b: ; 0x140b
+	ld hl, $c123
+	ld d, $0
+.asm_1410
+	cp [hl]
+	jr nc, .asm_1417
+	inc hl
+	inc d
+	jr .asm_1410
+
+.asm_1417
+	ld hl, $ceef
+	ld [hl], d
+	ret
+; 0x141c
+
+
+Function141c: ; 0x141c
+	add hl, de
+	ld a, [hli]
+	ld [MBC1RomBank], a
+	inc hl
+	ld a, [hli]
+	ld d, [hl]
+	ld e, a
+	ret
+; 0x1426
+
+
+Function1426: ; 0x1426
+	push bc
+	xor a
+	ld [$c11c], a
+	ld hl, $cee3
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, wc10f
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld bc, $0048
+	add hl, bc
+	call Function174c
+	jr c, .asm_1475
+	ld bc, $0008
+	add hl, bc
+	call Function174c
+	jr c, .asm_148d
+	jr z, .asm_148d
+	ld a, e
+	sub l
+	cp $6
+	jr c, .asm_1453
+	ld a, $5
+
+.asm_1453
+	ld c, a
+	ld b, $3
+	call Function101e
+	or a
+	jr z, .asm_148d
+	ld e, a
+	ld d, $0
+.asm_145f
+	ld hl, wc10f
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	add hl, de
+	ld a, l
+	ld [wc10f], a
+	ld a, h
+	ld [$c110], a
+	ld a, $1
+	ld [$c11c], a
+	jr .asm_148d
+
+.asm_1475
+	ld a, l
+	sub e
+	cp $6
+	jr c, .asm_147d
+	ld a, $5
+
+.asm_147d
+	ld c, a
+	ld b, $2
+	call Function101e
+	or a
+	jr z, .asm_148d
+	cpl
+	inc a
+	ld e, a
+	ld d, $ff
+	jr .asm_145f
+
+.asm_148d
+	ld hl, $cee5
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, $c111
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld bc, $0031
+	add hl, bc
+	call Function174c
+	jr c, .asm_14d7
+	ld bc, $0001
+	add hl, bc
+	call Function174c
+	jr c, .asm_14d5
+	jr z, .asm_14d5
+	ld a, e
+	sub l
+	cp $6
+	jr c, .asm_14b5
+	ld a, $5
+
+.asm_14b5
+	ld c, a
+	ld b, $0
+	call Function101e
+	or a
+	jr z, .asm_14d5
+	ld e, a
+	ld d, $0
+.asm_14c1
+	ld hl, $c111
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	add hl, de
+	ld a, l
+	ld [$c111], a
+	ld a, h
+	ld [$c112], a
+	ld a, $2
+	ld [$c11c], a
+
+.asm_14d5
+	pop bc
+	ret
+
+.asm_14d7
+	ld a, l
+	sub e
+	cp $6
+	jr c, .asm_14df
+	ld a, $5
+
+.asm_14df
+	ld c, a
+	ld b, $1
+	call Function101e
+	or a
+	jr z, .asm_14d5
+	cpl
+	inc a
+	ld e, a
+	ld d, $ff
+	jr .asm_14c1
+; 0x14ef
+
+
+Function14ef: ; 0x14ef
+	push de
+	push hl
+	push bc
+	ld a, e
+	ld [$ceed], a
+	sla e
+	rl d
+	sla e
+	rl d
+	sla e
+	rl d
+	ld a, d
+	ld [$c11d], a
+	ld a, l
+	ld [$ceee], a
+	sla l
+	rl h
+	sla l
+	rl h
+	sla l
+	rl h
+	ld a, h
+	ld [$c11e], a
+	call Functionf8a
+	ld a, [$4000]
+	push af
+	ld a, [hl]
+	call Functionfa9
+	ld a, [$ceee]
+	xor $ff
+	srl a
+	and $c
+	ld b, a
+	ld a, [$ceed]
+	srl a
+	srl a
+	srl a
+	and $3
+	add b
+	ld e, a
+	ld d, $0
+	add hl, de
+	ld a, [hl]
+	call Function140b
+	pop af
+	ld [MBC1RomBank], a
+	ld a, d
+	pop bc
+	pop hl
+	pop de
+	ret
+; 0x154c
+
+
+Function154c: ; 0x154c
+	call Function157f
+
+Function154f: ; 0x154f
+	ld hl, $cdc3
+	add hl, bc
+	ld a, [hl]
+	ld e, $0
+	bit 7, a
+	jr z, .asm_155b
+	dec e
+
+.asm_155b
+	ld d, e
+	sla a
+	rl e
+	sla a
+	rl e
+	sla a
+	rl e
+	ld hl, $cda5
+	add hl, bc
+	add [hl]
+	ld [hl], a
+	ld hl, $cee5
+	ld a, e
+	adc [hl]
+	ld [$cef5], a
+	ld e, a
+	inc hl
+	ld a, d
+	adc [hl]
+	ld [$cef6], a
+	ld d, a
+	ret
+; 0x157f
+
+
+Function157f: ; 0x157f
+	ld hl, $cdb4
+	add hl, bc
+	ld a, [hl]
+	ld e, $0
+	bit 7, a
+	jr z, .asm_158b
+	dec e
+
+.asm_158b
+	ld d, e
+	sla a
+	rl e
+	sla a
+	rl e
+	sla a
+	rl e
+	ld hl, $cd96
+	add hl, bc
+	add [hl]
+	ld [hl], a
+	ld hl, $cee3
+	ld a, e
+	adc [hl]
+	ld [$cef3], a
+	ld e, a
+	inc hl
+	ld a, d
+	adc [hl]
+	ld [$cef4], a
+	ld d, a
+	ret
+; 0x15af
 
 
 Function15af: ; 0x15af
 	push bc
-	ld a, [$c10f]
+	ld a, [wc10f]
 	add $e0
 	ld b, a
 	ld a, [$cee3]
@@ -1811,19 +3321,54 @@ Function15af: ; 0x15af
 ; 0x15d2
 
 
-INCBIN "baserom.gb", $15d2, $160f-$15d2
+INCBIN "baserom.gb", $15d2, $15d9-$15d2
 
-Function160f: ; 0x160f
+
+Function15d9: ; 0x15d9
+	ld de, $ffe0
+	ld hl, $00c0
+	call Function15ed
+	ret nz
+	ld de, $ffe0
+	ld hl, $00c0
+	call Function1616
+	ret
+; 0x15ed
+
+
+Function15ed: ; 0x15ed
+	ld a, [wc10f]
+	add e
+	ld e, a
+	ld a, [$c110]
+	adc d
+	ld d, a
+	ld a, [$cee4]
+	cp d
+	jr z, .asm_1600
+	ret c
+	jr .asm_1605
+
+.asm_1600
+	ld a, [$cee3]
+	cp e
+	ret c
+
+.asm_1605
+	add hl, de
+	ld a, [$cee4]
+	cp h
+	ld a, [$cee3]
+	jr z, .asm_1612
+.asm_160f
 	ret nc
 	xor a
 	ret
-; 0x1612
 
-
-Function1612: ; 0x1612
+.asm_1612
 	cp l
 	ret z
-	jr Function160f
+	jr .asm_160f
 ; 0x1616
 
 
@@ -1850,8 +3395,8 @@ Function1616: ; 0x1616
 	ld a, [$cee6]
 	cp h
 	ld a, [$cee5]
-	jr z, Function1612
-	jr Function160f
+	jr z, Function15ed.asm_1612
+	jr Function15ed.asm_160f
 ; 0x163a
 
 
@@ -1863,8 +3408,8 @@ Function163a: ; 0x163a
 	xor a
 
 .asm_1641
-	ld [$caf5], a
-	ld a, [$caf2]
+	ld [wcaf5], a
+	ld a, [wcaf2]
 	ld [MBC1RomBank], a
 	push hl
 	ld a, [hli]
@@ -1877,7 +3422,7 @@ Function163a: ; 0x163a
 	ld [$cee5], a
 	ld a, [hli]
 	ld [$cee6], a
-	ld a, [$caf5]
+	ld a, [wcaf5]
 	call Function1732
 	jr z, .asm_169f
 
@@ -1885,7 +3430,7 @@ Function163a: ; 0x163a
 	ld e, [hl]
 	inc hl
 	ld d, [hl]
-	ld hl, $c10f
+	ld hl, wc10f
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -1910,16 +3455,16 @@ Function163a: ; 0x163a
 	jr nz, .asm_169f
 	call Function16b6
 	jr nc, .asm_169f
-	ld a, [$caf5]
+	ld a, [wcaf5]
 	call Function173e
 
 .asm_169f
 	pop hl
 	ld bc, $0005
 	add hl, bc
-	ld a, [$caf1]
+	ld a, [wcaf1]
 	ld b, a
-	ld a, [$caf5]
+	ld a, [wcaf5]
 	inc a
 	cp b
 	jp nz, .asm_1641
@@ -1979,7 +3524,7 @@ Function16b6: ; 0x16b6
 .asm_1706
 	ld hl, $ce0e
 	add hl, bc
-	ld a, [$caf5]
+	ld a, [wcaf5]
 	ld [hl], a
 	call Function1794
 	call Function17b5
@@ -1989,7 +3534,7 @@ Function16b6: ; 0x16b6
 	ld [hl], a
 	ld hl, $cea4
 	add hl, bc
-	ld a, [$c104]
+	ld a, [wc104]
 	ld [hl], a
 	scf
 	pop bc
@@ -2070,7 +3615,25 @@ Function1752: ; 0x1752
 ; 0x1773
 
 
-INCBIN "baserom.gb", $1773, $1794-$1773
+Function1773: ; 0x1773
+	ld hl, $ce1d
+	add hl, bc
+	ld a, [hl]
+	ld [$cee3], a
+	ld hl, $ce2c
+	add hl, bc
+	ld a, [hl]
+	ld [$cee4], a
+	ld hl, $ce3b
+	add hl, bc
+	ld a, [hl]
+	ld [$cee5], a
+	ld hl, $ce4a
+	add hl, bc
+	ld a, [hl]
+	ld [$cee6], a
+	ret
+; 0x1794
 
 
 Function1794: ; 0x1794
@@ -2116,7 +3679,7 @@ Function17b5: ; 0x17b5
 
 
 Function17d6: ; 0x17d6
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -2135,12 +3698,45 @@ Function17d6: ; 0x17d6
 ; 0x17eb
 
 
-INCBIN "baserom.gb", $17eb, $1823-$17eb
+Function17eb: ; 0x17eb
+	ld a, $0
+	ld [wcaf6], a
+	ld hl, $caf3
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	xor a
+.asm_17f7
+	ld [wcaf5], a
+	ld a, [wcaf2]
+	ld [MBC1RomBank], a
+	ld a, [hl]
+	cp $a
+	jr c, .asm_1812
+	cp $14
+	jr nc, .asm_1812
+	ld a, [wcaf6]
+	add $1
+	daa
+	ld [wcaf6], a
+
+.asm_1812
+	ld bc, $0005
+	add hl, bc
+	ld a, [wcaf1]
+	ld b, a
+	ld a, [wcaf5]
+	inc a
+	cp b
+	jp nz, .asm_17f7
+	ret
+; 0x1823
 
 
 Function1823: ; 0x1823
 	ld a, $0
 	ld [$cee0], a
+
 .asm_1828
 	ld a, [$cee0]
 	ld c, a
@@ -2154,11 +3750,13 @@ Function1823: ; 0x1823
 	add hl, de
 	dec a
 	jr nz, .asm_1837
+
 	ld a, [$cee0]
 	inc a
 	ld [$cee0], a
 	cp $f
 	jr c, .asm_1828
+
 	ret
 ; 0x1849
 
@@ -2168,29 +3766,38 @@ Function1849: ; 0x1849
 	ld d, $0
 	ld c, $1
 	ld e, $4
+
+.asm_1851
 	ld e, $4
+
+.asm_1853
 	ld hl, $cd4b
 	add hl, bc
 	ld a, [hl]
 	cp $0
-	jp z, $1901
+	jp z, .asm_1901
 	call Function1752
+
 	ld hl, $cd5a
 	add hl, de
 	ld a, [hl]
 	ld [$cee9], a
+
 	ld hl, $cd69
 	add hl, de
 	ld a, [hl]
 	ld [$ceea], a
+
 	ld hl, $cd78
 	add hl, de
 	ld a, [hl]
 	ld [$ceeb], a
+
 	ld hl, $cd87
 	add hl, de
 	ld a, [hl]
 	ld [$ceec], a
+
 	ld a, e
 	ld [$cee1], a
 	ld hl, $cd4b
@@ -2198,8 +3805,10 @@ Function1849: ; 0x1849
 	ld a, [hl]
 	and a
 	jr z, .asm_1901
+
 	call Function1910
 	jr nc, .asm_1901
+
 	ld hl, $cd4b
 	add hl, bc
 	ld a, $0
@@ -2228,7 +3837,7 @@ Function1849: ; 0x1849
 	add hl, de
 	ld a, [hl]
 	sub $a
-	ld hl, $caf7
+	ld hl, wcaf7
 	cp [hl]
 	jr z, .asm_18c6
 	jr nc, .asm_1901
@@ -2244,16 +3853,16 @@ Function1849: ; 0x1849
 	add hl, de
 	ld a, [hl]
 	sub $9
-	ld hl, $caf7
+	ld hl, wcaf7
 	cp [hl]
 	jr c, .asm_18e1
-	ld [$caf7], a
+	ld [wcaf7], a
 
 .asm_18e1
 	ld a, $10
 	call Function205e
 	and a
-	ld a, [$caf6]
+	ld a, [wcaf6]
 	dec a
 	daa
 	cp $0
@@ -2261,10 +3870,10 @@ Function1849: ; 0x1849
 	ld a, $0
 
 .asm_18f2
-	ld [$caf6], a
+	ld [wcaf6], a
 	push de
-	ld a, $47
-	call Function31a4
+	ld a, Sound_47
+	call FarCall_StartMusic
 	ld e, $1
 	call Function2006
 	pop de
@@ -2273,11 +3882,11 @@ Function1849: ; 0x1849
 	inc e
 	ld a, $e
 	cp e
-	jp nc, $1853
+	jp nc, .asm_1853
 	inc c
 	ld a, $3
 	cp c
-	jp nc, $1851
+	jp nc, .asm_1851
 	ret
 ; 0x1910
 
@@ -2289,7 +3898,7 @@ Function1910: ; 0x1910
 	ld c, a
 	ld b, $0
 	ld a, $12
-	ld [$c0d9], a
+	ld [wc0d9], a
 	ld a, [$cee9]
 	ld hl, $ceea
 	ld d, [hl]
@@ -2309,12 +3918,12 @@ Function1910: ; 0x1910
 	cp $9
 	jr nc, .asm_19a9
 	ld a, $9
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, $0
-	ld [$c0ce], a
-	ld a, [$c0cd]
+	ld [wc0ce], a
+	ld a, [wc0cd]
 	ld l, a
-	ld a, [$c0ce]
+	ld a, [wc0ce]
 	ld h, a
 	ld a, l
 	cpl
@@ -2324,25 +3933,25 @@ Function1910: ; 0x1910
 	ld h, a
 	inc hl
 	ld a, l
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, h
-	ld [$c0ce], a
+	ld [wc0ce], a
 	ld a, [$ceeb]
 	ld l, a
 	ld a, [$ceec]
 	ld h, a
-	ld a, [$c0cd]
+	ld a, [wc0cd]
 	ld e, a
-	ld a, [$c0ce]
+	ld a, [wc0ce]
 	ld d, a
 	add hl, de
 	ld a, l
 	ld [$ceeb], a
 	ld a, h
 	ld [$ceec], a
-	ld a, [$c0cd]
+	ld a, [wc0cd]
 	ld l, a
-	ld a, [$c0ce]
+	ld a, [wc0ce]
 	ld h, a
 	ld a, l
 	cpl
@@ -2352,9 +3961,9 @@ Function1910: ; 0x1910
 	ld h, a
 	inc hl
 	ld a, l
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, h
-	ld [$c0ce], a
+	ld [wc0ce], a
 	ld hl, $cee5
 	ld e, [hl]
 	inc hl
@@ -2365,7 +3974,7 @@ Function1910: ; 0x1910
 	ld l, a
 	call Function174c
 	jr c, .asm_19a9
-	ld a, [$c0d9]
+	ld a, [wc0d9]
 	ld c, a
 	ld b, $0
 	add hl, bc
@@ -2388,12 +3997,14 @@ Function19ad: ; 0x19ad
 	ld a, [$ce95]
 	cp $0
 	ret z
-	ld a, [$c0db]
+	ld a, [wc0db]
 	cp $5
 	ret z
-	ld hl, $c0f4
+	ld hl, wc0f4
 	inc [hl]
 	ld e, $4
+
+.asm_19bf
 	ld d, $0
 	ld a, e
 	ld [$cee1], a
@@ -2408,7 +4019,7 @@ Function19ad: ; 0x19ad
 	ld l, a
 	ld h, $0
 	add hl, hl
-	ld de, $1a39
+	ld de, data_1a39
 	add hl, de
 	ld a, [hli]
 	ld h, [hl]
@@ -2430,17 +4041,17 @@ Function19ad: ; 0x19ad
 	inc a
 	ld e, a
 	cp $f
-	jp c, $19bf
+	jp c, .asm_19bf
 	ld a, [$c0f5]
 	and a
 	jr nz, .asm_1a06
-	ld a, [$c0f4]
+	ld a, [wc0f4]
 	cp $3c
 	ret c
 	jr .asm_1a12
 
 .asm_1a06
-	ld a, [$c0f4]
+	ld a, [wc0f4]
 	cp $28
 	ret c
 	xor a
@@ -2457,19 +4068,497 @@ Function19ad: ; 0x19ad
 .asm_1a1e
 	xor a
 	ld [$c0f6], a
-	ld [$c0f4], a
+	ld [wc0f4], a
 	ret
 ; 0x1a26
 
 
-INCBIN "baserom.gb", $1a26, $1dea-$1a26
+Function1a26: ; 0x1a26
+	push af
+	push de
+	push hl
+	ld d, $0
+	ld a, [$cee1]
+	ld e, a
+	ld hl, $cd4b
+	add hl, de
+	xor a
+	ld [hl], a
+	pop hl
+	pop de
+	pop af
+	ret
+; 0x1a39
+
+
+data_1a39: ; 0x1a39
+dw Function1b0b, Function1b0b, Function1b0b, Function1d72, Function1da4, Function1b0c, Function1bf4, Function1be7
+dw Function1b39, Function1b39, Function1b39, Function1b39, Function1b39, Function1b39, Function1b39, Function1b39
+dw Function1b39, Function1b39, Function1b39, Function1b39, Function1bca, Function1bca, Function1bca, Function1bca
+dw Function1b45, Function1b6d.asm_1b7d, Function1b6d, Function1bca, Function1bca, Function1bca, Function1bca, Function1bca
+dw Function1bca, Function1bcd, Function1bda, Function1cf9, Function1c3c, Function1c3f, Function1c3f, Function1c42
+dw Function1c42, Function1c45, Function1c48, Function1c4b, Function1d72, Function1da4, Function1c4e, Function1c51
+dw Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54
+dw Function1c54, Function1c54, Function1b0b, Function1b0b, Function1cd2, Function1cd2.asm_1cd6, Function1cd2.asm_1cda, Function1cd2.asm_1cde
+dw Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54
+dw Function1c54, Function1c54, Function1b0b, Function1b0b, Function1c54, Function1c54, Function1c54, Function1c54
+dw Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1bf4, Function1be7
+dw Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54, Function1c54
+dw Function1c54, Function1c54, Function1d72, Function1b0b, Function1b0b, Function1b0b, Function1b0b, Function1b0b, Function1b0b
+
+
+Function1b0b: ; 0x1b0b
+	ret
+; 0x1b0c
+
+
+Function1b0c: ; 0x1b0c
+	ld a, $15
+	call Function205e
+	ld a, $c
+	call FarCall_StartMusic
+	jp Function1a26
+; 0x1b19
+
+
+Function1b19: ; 0x1b19
+	ld a, [wc0e5]
+	cp $90
+	jr nc, .asm_1b26
+	add $2
+	daa
+	ld [wc0e5], a
+
+.asm_1b26
+	jp Function1a26
+; 0x1b29
+
+
+Function1b29: ; 0x1b29
+	ld a, [wc0e5]
+	cp $90
+	jr nc, Function1b19.asm_1b26 ; 0x1b2e $f6
+	add $1
+	daa
+	ld [wc0e5], a
+	jp Function1a26
+; 0x1b39
+
+
+Function1b39: ; 0x1b39
+	ld hl, $ce59
+	add hl, de
+	ld a, [hl]
+	and a
+	jr z, .asm_1b42
+	ret
+
+.asm_1b42
+	jp Function1cf9
+; 0x1b45
+
+
+Function1b45: ; 0x1b45
+	ld hl, $cd4b
+	add hl, de
+	ld a, $2
+	ld [hl], a
+	ld hl, $ce77
+	add hl, de
+	ld [hl], $21
+	ld a, [wc0dc]
+	cp $11
+	jr c, .asm_1b68
+	and a
+	add $90
+	daa
+	jr nc, .asm_1b68
+	cp $11
+	jr nc, .asm_1b65
+	ld a, $10
+
+.asm_1b65
+	ld [wc0dc], a
+
+.asm_1b68
+	ld a, $17
+	jp FarCall_StartMusic
+; 0x1b6d
+
+
+Function1b6d: ; 0x1b6d
+	ld a, [wc0dc]
+	and a
+	add $95
+	daa
+	jr nc, .asm_1b7d
+	cp $3
+	jr c, .asm_1b7d
+	ld [wc0dc], a
+
+.asm_1b7d
+	call Function1b83
+	jp Function1a26
+; 0x1b83
+
+
+Function1b83: ; 0x1b83
+	ld a, [$cee1]
+	ld e, a
+	ld d, $0
+	ld hl, $ce86
+	add hl, de
+	ld a, [hl]
+	and $f
+	ld e, a
+	ld hl, $1baa
+	add hl, de
+	ld a, [hl]
+	ld hl, $cdb4
+	add [hl]
+	ld [hl], a
+	ld hl, $1bba
+	add hl, de
+	ld a, [hl]
+	ld hl, $cdc3
+	add [hl]
+	ld [hl], a
+	ld a, $6
+	jp Function1e31
+; 0x1baa
+
+
+INCBIN "baserom.gb", $1baa, $1bca-$1baa
+
+
+Function1bca: ; 0x1bca
+	jp Function1cf9
+; 0x1bcd
+
+
+Function1bcd: ; 0x1bcd
+	ld a, $c
+	call FarCall_StartMusic
+	ld a, $e6
+	ld [wc102], a
+	jp Function1a26
+; 0x1bda
+
+
+Function1bda: ; 0x1bda
+	ld a, $c
+	call FarCall_StartMusic
+	ld a, $10
+	call Function205e
+	jp Function1a26
+; 0x1be7
+
+
+Function1be7: ; 0x1be7
+	ld a, $9
+	call FarCall_StartMusic
+	ld a, $30
+	call Function1e31
+	jp Function1bfe
+; 0x1bf4
+
+
+Function1bf4: ; 0x1bf4
+	ld a, $8
+	call FarCall_StartMusic
+	ld a, $17
+	call Function1e31
+
+Function1bfe: ; 0x1bfe
+	ld a, [$c0f2]
+	and $7
+	ld hl, data_1c2c
+	call Function2ef
+	ld [$cdb4], a
+	ld a, [$c0f2]
+	and $7
+	ld hl, $1c34
+	call Function2ef
+	ld [$cdc3], a
+	ld a, $1
+	ld [$c0f8], a
+	ld a, [$cee1]
+	ld e, a
+	ld d, $0
+	ld hl, $ce77
+	add hl, de
+	ld [hl], $1f
+	ret
+; 0x1c2c
+
+
+data_1c2c: ; 0x1c2c
+INCBIN "baserom.gb", $1c2c, $1c3c-$1c2c
+
+
+Function1c3c: ; 0x1c3c
+	jp Function1d72
+; 0x1c3f
+
+
+Function1c3f: ; 0x1c3f
+	jp Function1da4
+; 0x1c42
+
+
+Function1c42: ; 0x1c42
+	jp Function1d72
+; 0x1c45
+
+
+Function1c45: ; 0x1c45
+	jp Function1da4
+; 0x1c48
+
+
+Function1c48: ; 0x1c48
+	jp Function1d72
+; 0x1c4b
+
+
+Function1c4b: ; 0x1c4b
+	jp Function1da4
+; 0x1c4e
+
+
+Function1c4e: ; 0x1c4e
+	jp Function1b0b
+; 0x1c51
+
+
+Function1c51: ; 0x1c51
+	jp Function1cf9
+; 0x1c54
+
+
+Function1c54: ; 0x1c54
+	ld a, [$ce77]
+	and a
+	jr nz, .asm_1c5b
+	ret
+
+.asm_1c5b
+	ld hl, $cd4b
+	add hl, de
+	ld a, [hl]
+	cp $57
+	jr nc, .asm_1ca5
+	cp $4b
+	jr nc, .asm_1c92
+	cp $3f
+	jr nc, .asm_1c7f
+	ld hl, $cd78
+	add hl, de
+	ld a, [hl]
+	and a
+	add $1e
+	ld [hl], a
+	jr nc, .asm_1cb5
+	ld hl, $cd87
+	add hl, de
+	inc [hl]
+	jp .asm_1cb5
+
+.asm_1c7f
+	ld hl, $cd78
+	add hl, de
+	ld a, [hl]
+	and a
+	sub $1e
+	ld [hl], a
+	jr nc, .asm_1cb5
+	ld hl, $cd87
+	add hl, de
+	dec [hl]
+	jp .asm_1cb5
+
+.asm_1c92
+	ld hl, $cd5a
+	add hl, de
+	ld a, [hl]
+	and a
+	add $1e
+	ld [hl], a
+	jr nc, .asm_1cb5
+	ld hl, $cd69
+	add hl, de
+	inc [hl]
+	jp .asm_1cb5
+
+.asm_1ca5
+	ld hl, $cd5a
+	add hl, de
+	ld a, [hl]
+	and a
+	sub $1e
+	ld [hl], a
+	jr nc, .asm_1cb5
+	ld hl, $cd69
+	add hl, de
+	dec [hl]
+
+.asm_1cb5
+	ld hl, $cd4b
+	add hl, de
+	ld a, [hl]
+	sub $30
+	ld hl, data_1e42
+	ld e, a
+	add hl, de
+	ld a, [hl]
+	ld c, a
+	ld a, [$cee1]
+	ld e, a
+	ld hl, $cd4b
+	add hl, de
+	ld a, c
+	ld [hl], a
+	ld a, $a
+	jp FarCall_StartMusic
+; 0x1cd2
+
+
+Function1cd2: ; 0x1cd2
+	ld e, $1
+	jr .asm_1ce0
+
+.asm_1cd6
+	ld e, $2
+	jr .asm_1ce0
+
+.asm_1cda
+	ld e, $5
+	jr .asm_1ce0
+
+.asm_1cde
+	ld e, $8
+
+.asm_1ce0
+	call Function2006
+	ld a, [$cee1]
+	ld hl, $cd4b
+	ld e, a
+	add hl, de
+	ld a, [hl]
+	add $27
+	ld [hl], a
+	ld hl, $cea4
+	add hl, de
+	ld [hl], a
+	ld a, $b
+	jp FarCall_StartMusic
+; 0x1cf9
+
+
+Function1cf9: ; 0x1cf9
+	ld a, [$c0f5]
+	and a
+	ret nz
+	ld hl, $c0f6
+	inc [hl]
+	ld hl, $ce77
+	add hl, de
+	ld [hl], $1f
+	ld a, [$c0f2]
+	and $7
+	ld hl, $1d29
+	call Function2ef
+	ld [$cdb4], a
+	ld a, [$c0f2]
+	and $7
+	ld hl, $1d31
+	call Function2ef
+	ld [$cdc3], a
+	ld a, $c
+	jp Function1e31
+; 0x1d29
+
+
+INCBIN "baserom.gb", $1d29, $1d72-$1d29
+
+
+Function1d72: ; 0x1d72
+	call Function1cf9
+	ld a, [$cee1]
+	ld e, a
+	ld d, $0
+	ld hl, $cdc3
+	add hl, de
+	ld a, [hl]
+	and $80
+	bit 7, a
+	jr nz, .asm_1d91
+	ld a, [$c0f2]
+	ld e, a
+	ld hl, $1de0
+	add hl, de
+	ld a, [hl]
+	jr .asm_1d9a
+
+.asm_1d91
+	ld a, [$c0f2]
+	ld e, a
+	ld hl, $1dd6
+	add hl, de
+	ld a, [hl]
+
+.asm_1d9a
+	ld hl, $cdb4
+	add [hl]
+	ld [hl], a
+	ld a, $2d
+	jp Function1e31
+; 0x1da4
+
+
+Function1da4: ; 0x1da4
+	call Function1cf9
+	ld a, [$cee1]
+	ld e, a
+	ld d, $0
+	ld hl, $cdc3
+	add hl, de
+	ld a, [hl]
+	and $80
+	bit 7, a
+	jr nz, .asm_1dc3
+	ld a, [$c0f2]
+	ld e, a
+	ld hl, $1de2
+	add hl, de
+	ld a, [hl]
+	jr .asm_1dcc
+
+.asm_1dc3
+	ld a, [$c0f2]
+	ld e, a
+	ld hl, $1dd8
+	add hl, de
+	ld a, [hl]
+
+.asm_1dcc
+	ld hl, $cdc3
+	add [hl]
+	ld [hl], a
+	ld a, $2d
+	jp Function1e31
+; 0x1dd6
+
+
+
+INCBIN "baserom.gb", $1dd6, $1dea-$1dd6
 
 
 Function1dea: ; 0x1dea
 	push bc
 	push de
 	ld a, $9
-	ld [$c0d9], a
+	ld [wc0d9], a
 	ld a, [$cee4]
 	ld d, a
 	ld a, [$cee3]
@@ -2519,7 +4608,27 @@ Function1dea: ; 0x1dea
 ; 0x1e31
 
 
-INCBIN "baserom.gb", $1e31, $2006-$1e31
+Function1e31: ; 0x1e31
+	push de
+	ld e, a
+	ld a, [$ce77]
+	and a
+	jr z, .asm_1e3c
+	cp e
+	jr c, .asm_1e40
+
+.asm_1e3c
+	ld a, e
+	ld [$ce77], a
+
+.asm_1e40
+	pop de
+	ret
+; 0x1e42
+
+
+data_1e42: ; 0x1e42
+INCBIN "baserom.gb", $1e42, $2006-$1e42
 
 
 Function2006: ; 0x2006
@@ -2550,10 +4659,10 @@ Function2023: ; 0x2023
 	ld a, [$c0e4]
 	cp e
 	jr z, .asm_203a
-	ld hl, $c0e6
+	ld hl, wc0e6
 	inc [hl]
-	ld a, $4f
-	call Function31a4
+	ld a, Sound_4f
+	call FarCall_StartMusic
 
 .asm_203a
 	pop de
@@ -2590,12 +4699,12 @@ Function203c: ; 0x203c
 Function205e: ; 0x205e
 	push de
 	ld e, a
-	ld a, [$c0dc]
+	ld a, [wc0dc]
 	and a
 	add e
 	daa
 	jr c, .asm_206b
-	ld [$c0dc], a
+	ld [wc0dc], a
 
 .asm_206b
 	pop de
@@ -2611,27 +4720,956 @@ Function206d: ; 0x206d
 	ld a, $9
 	ld [$cd4b], a
 	ld a, $1
-	ld [$caf7], a
+	ld [wcaf7], a
 	xor a
-	ld [$c0dd], a
+	ld [wc0dd], a
 	xor a
 	ld [wc100], a
 	ld [wc101], a
-	ld [$c102], a
+	ld [wc102], a
 	ld [$c0f8], a
 	ld a, $7
-	ld [$c0e0], a
+	ld [wc0e0], a
 	ret
 ; 0x2098
 
 
-INCBIN "baserom.gb", $2098, $2570-$2098
+Function2098: ; 0x2098
+	ld bc, $0000
+	xor a
+	ld [wc101], a
+	ld a, [$ce95]
+	cp $1
+	jr z, .asm_20b6
+	cp $2
+	jr z, .asm_20b0
+	call Function2313
+	jp .asm_21da
+
+.asm_20b0
+	call Function234b
+	jp .asm_21da
+
+.asm_20b6
+	ld a, [wc0db]
+	cp $b
+	jp nc, $21c4
+	cp $3
+	jp z, $21c4
+	cp $5
+	jp z, $21ce
+	ld hl, hHoldInputs
+	bit 1, [hl]
+	jr nz, .asm_20d5
+	xor a
+	ld [$cef0], a
+	jr .asm_20e9
+
+.asm_20d5
+	ld hl, $cef0
+	bit 0, [hl]
+	jr nz, .asm_20e9
+	ld a, $1
+	ld [$cef0], a
+	ld a, $6
+	call FarCall_StartMusic
+	call Function357.asm_38c
+
+.asm_20e9
+	ld a, [$ce77]
+	and a
+	jr nz, .asm_2118
+	ld hl, wc0e0
+	dec [hl]
+	jr nz, .asm_2118
+	ld a, $7
+	ld [hl], a
+	ld hl, hHoldInputs
+	bit 4, [hl]
+	jp nz, $210f
+	bit 5, [hl]
+	jr z, .asm_2118
+	ld a, [$ce86]
+	dec a
+	and $f
+	ld [$ce86], a
+	jr .asm_2118
+
+	ld a, [$ce86]
+	inc a
+	and $f
+	ld [$ce86], a
+
+.asm_2118
+	call Function2412
+	ld a, [$ce77]
+	and a
+	jr z, .asm_2127
+	dec a
+	ld [$ce77], a
+	jr .asm_212b
+
+.asm_2127
+	xor a
+	ld [$c0f8], a
+
+.asm_212b
+	xor a
+	ld [$c0f9], a
+	ld [$c0fa], a
+	ld hl, $cee3
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, $cee5
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call Function14ef
+	ld [$c0f7], a
+	ld a, [$ce77]
+	and a
+	jp nz, $2181
+	ld hl, hHoldInputs
+	bit 0, [hl]
+	jp z, $2181
+	ld hl, data_2276
+	ld a, [wc102]
+	and a
+	jr z, .asm_215f
+	ld hl, $2296
+
+.asm_215f
+	ld a, [$ce86]
+	and $f
+	call Function2ef
+	ld [$c0f9], a
+	ld hl, $2286
+	ld a, [wc102]
+	and a
+	jr z, .asm_2176
+	ld hl, $22a6
+
+.asm_2176
+	ld a, [$ce86]
+	and $f
+	call Function2ef
+	ld [$c0fa], a
+	ld a, [$c0f7]
+	ld d, $0
+	add a
+	ld e, a
+	ld hl, $22e6
+	add hl, de
+	ld a, [$c0f9]
+	add [hl]
+	ld [$c0f9], a
+	inc hl
+	ld a, [$c0fa]
+	add [hl]
+	ld [$c0fa], a
+	call Function2425
+	ld [$c0fa], a
+	ld a, [$c0f9]
+	call Function2425
+	ld [$c0f9], a
+	ld a, [$c0f9]
+	ld h, a
+	ld a, [$cdb4]
+	call Function23ea
+	ld [$cdb4], a
+	ld a, [$c0fa]
+	ld h, a
+	ld a, [$cdc3]
+	call Function23ea
+	ld [$cdc3], a
+	ld a, [$c0f7]
+	and a
+	jr z, .asm_21ce
+	cp $2
+	jr z, .asm_21d4
+
+.asm_21ce
+	call Function2384
+	call Function23b7
+
+.asm_21d4
+	call Function2454
+	ld bc, $0000
+
+.asm_21da
+	ld a, [$c0f8]
+	and a
+	jr z, .asm_21f0
+	ld a, [wc104]
+	and $1
+	jr nz, .asm_21f0
+	ld a, [$ce86]
+	inc a
+	and $f
+	ld [$ce86], a
+
+.asm_21f0
+	xor a
+	ld [wc0ca], a
+	ld a, [$ce86]
+	cp $8
+	jr c, .asm_220c
+	ld [wc0cd], a
+	ld hl, wc0cd
+	ld a, $10
+	and a
+	sbc [hl]
+	push af
+	ld a, $20
+	ld [wc0ca], a
+	pop af
+
+.asm_220c
+	ld [wc0c7], a
+	ld hl, wc0c6
+	ld [hl], $0
+	ld a, [wc0db]
+	cp $5
+	jr nz, .asm_2245
+	xor a
+	ld [wc0ca], a
+	ld a, $f
+	ld [wc0c6], a
+	ld a, [wc0de]
+	srl a
+	srl a
+	cp $f
+	jr c, .asm_2238
+	call Function1794
+	call Function1426
+	jp Function15af
+
+.asm_2238
+	and $f
+	ld d, $0
+	ld e, a
+	ld hl, $22d6
+	add hl, de
+	ld a, [hl]
+	ld [wc0c7], a
+
+.asm_2245
+	call Function1794
+	ld a, [$ce95]
+	cp $2
+	jr z, .asm_2252
+	call Function22f4
+
+.asm_2252
+	call Function15af
+	ld a, [$ce95]
+	cp $1
+	jr nz, .asm_2269
+	ld a, [$ce77]
+	and a
+	jr z, .asm_2269
+	ld a, [wc104]
+	and $8
+	jr nz, .asm_2269
+
+.asm_2269
+	ld a, [wc0c6]
+	cp $f
+	jr z, .asm_2273
+	jp Function272a
+
+.asm_2273
+	jp Functione41
+; 0x2276
+
+
+data_2276: ; 0x2276
+INCBIN "baserom.gb", $2276, $22f4-$2276
+
+
+Function22f4: ; 0x22f4
+	ld a, [$ce95]
+	cp $0
+	jr nz, .asm_2310
+	ld a, [$cefd]
+	ld hl, $cd69
+	cp [hl]
+	jr c, .asm_2310
+	jr nz, .asm_230f
+	ld a, [$cefc]
+	ld hl, $cd5a
+	cp [hl]
+	jr c, .asm_2310
+
+.asm_230f
+	ret
+
+.asm_2310
+	jp Function1426
+; 0x2313
+
+
+Function2313: ; 0x2313
+	ld a, [$ce77]
+	dec a
+	ld [$ce77], a
+	cp $25
+	jr nz, .asm_232c
+	ld a, $1
+	ld [$ce95], a
+	xor a
+	ld [$ce86], a
+	ld [$ce77], a
+	jr .asm_2345
+
+.asm_232c
+	ld a, $31
+	ld [$cdb4], a
+	xor a
+	ld [$cdc3], a
+	ld a, [wc104]
+	and $1
+	jr nz, .asm_2345
+	ld a, [$ce86]
+	inc a
+	and $f
+	ld [$ce86], a
+
+.asm_2345
+	call Function154c
+	jp Function2fe
+; 0x234b
+
+
+Function234b: ; 0x234b
+	ld a, $21
+	ld [$cdb4], a
+	xor a
+	ld [$cdc3], a
+	ld a, [wc104]
+	and $1
+	jr nz, .asm_2364
+	ld a, [$ce86]
+	inc a
+	and $f
+	ld [$ce86], a
+
+.asm_2364
+	call Function154c
+	call Function2fe
+	ld a, [$cf00]
+	and a
+	jr z, .asm_2383
+	ld a, $7
+	ld [wc0db], a
+	ld a, $1f
+	ld [wc0de], a
+	ld a, $1
+	ld [wc0df], a
+	xor a
+	ld [$cd4b], a
+
+.asm_2383
+	ret
+; 0x2384
+
+
+Function2384: ; 0x2384
+	ld a, [$cdb4]
+	and a
+	jr z, .asm_23b6
+	ld a, [$c0ee]
+	srl a
+	srl a
+	srl a
+	srl a
+	and a
+	ld [$c0ee], a
+	jr nz, .asm_23b6
+	ld a, [$cdb4]
+	and a
+	jr z, .asm_23b6
+	ld a, $ff
+	ld [$c0ee], a
+	ld a, [$cdb4]
+	bit 7, a
+	jr nz, .asm_23b2
+	dec a
+	ld [$cdb4], a
+	ret
+
+.asm_23b2
+	inc a
+	ld [$cdb4], a
+
+.asm_23b6
+	ret
+; 0x23b7
+
+
+Function23b7: ; 0x23b7
+	ld a, [$cdc3]
+	and a
+	jr z, .asm_23e9
+	ld a, [$c0ef]
+	srl a
+	srl a
+	srl a
+	srl a
+	and a
+	ld [$c0ef], a
+	jr nz, .asm_23e9
+	ld a, [$cdc3]
+	and a
+	jr z, .asm_23e9
+	ld a, $ff
+	ld [$c0ef], a
+	ld a, [$cdc3]
+	bit 7, a
+	jr nz, .asm_23e5
+	dec a
+	ld [$cdc3], a
+	ret
+
+.asm_23e5
+	inc a
+	ld [$cdc3], a
+
+.asm_23e9
+	ret
+; 0x23ea
+
+
+Function23ea: ; 0x23ea
+	push de
+	ld e, a
+	ld a, h
+	and a
+	jr nz, .asm_23f3
+	ld a, e
+	pop de
+	ret
+
+.asm_23f3
+	ld a, h
+	bit 7, a
+	jr nz, .asm_2405
+	ld a, e
+	add $2
+	bit 7, a
+	jr nz, .asm_2403
+	cp h
+	jr c, .asm_2403
+.asm_2402
+	ld a, e
+
+.asm_2403
+	pop de
+	ret
+
+.asm_2405
+	ld a, e
+	and a
+	sub $2
+	bit 7, a
+	jr z, .asm_2403
+	cp h
+	jr nc, .asm_2403
+	jr .asm_2402
+; 0x2412
+
+
+Function2412: ; 0x2412
+	ld a, [wc102]
+	cp $0
+	jr z, .asm_2424
+	ld a, [wc104]
+	and $3
+	jr nz, .asm_2424
+	ld hl, wc102
+	dec [hl]
+
+.asm_2424
+	ret
+; 0x2425
+
+
+Function2425: ; 0x2425
+	ld e, a
+	ld a, $3c
+	ld [wc0cd], a
+	ld a, [wc102]
+	and a
+	jr z, .asm_2436
+	ld a, $5a
+	ld [wc0cd], a
+
+.asm_2436
+	ld hl, wc0cd
+	ld a, e
+	bit 7, a
+	jr nz, .asm_2443
+	cp [hl]
+	jr c, .asm_2442
+	ld a, [hl]
+
+.asm_2442
+	ret
+
+.asm_2443
+	ld a, [wc0cd]
+	cpl
+	inc a
+	ld [wc0cd], a
+	ld a, e
+	ld hl, wc0cd
+	cp [hl]
+	jr nc, .asm_2453
+	ld a, [hl]
+
+.asm_2453
+	ret
+; 0x2454
+
+
+Function2454: ; 0x2454
+	xor a
+	ld [wc0cd], a
+	ld [wc0cf], a
+	ld bc, $0000
+	call Function157f
+	ld a, [$cdb4]
+	and a
+	jp z, .asm_24cd
+	ld hl, $2568
+	bit 7, a
+	jr z, .asm_2471
+	inc hl
+	inc hl
+
+.asm_2471
+	ld a, [hli]
+	ld d, a
+	ld a, [hli]
+	ld e, a
+	ld a, e
+	ld [$c0d3], a
+	ld a, d
+	ld [$c0d4], a
+	ld hl, $cef3
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	add hl, de
+	ld e, l
+	ld d, h
+	ld hl, $cee5
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld bc, $0003
+	add hl, bc
+	call Function14ef
+	cp $1
+	jr z, .asm_24ba
+	ld a, [$c0d3]
+	ld e, a
+	ld a, [$c0d4]
+	ld d, a
+	ld hl, $cef3
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	add hl, de
+	ld e, l
+	ld d, h
+	ld hl, $cee5
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, $ff
+	ld c, $fd
+	add hl, bc
+	call Function14ef
+	cp $1
+	jr nz, .asm_24cd
+
+.asm_24ba
+	ld a, [$cdb4]
+	call Function2f9
+	ld [$cdb4], a
+	ld a, $6
+	call Function1e31
+	ld a, $1
+	ld [wc0cd], a
+
+.asm_24cd
+	ld bc, $0000
+	call Function154f
+	ld a, [$cdc3]
+	and a
+	jp z, .asm_2543
+	ld hl, $256c
+	bit 7, a
+	jr z, .asm_24e3
+	inc hl
+	inc hl
+
+.asm_24e3
+	ld a, [hli]
+	ld d, a
+	ld a, [hli]
+	ld e, a
+	ld a, e
+	ld [$c0d3], a
+	ld a, d
+	ld [$c0d4], a
+	ld hl, $cef5
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	add hl, de
+	push hl
+	ld hl, $cee3
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld bc, $0003
+	add hl, bc
+	ld d, h
+	ld e, l
+	pop hl
+	call Function14ef
+	cp $1
+	jr z, .asm_2530
+	ld a, [$c0d3]
+	ld e, a
+	ld a, [$c0d4]
+	ld d, a
+	ld hl, $cef5
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	add hl, de
+	push hl
+	ld hl, $cee3
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, $ff
+	ld c, $fd
+	add hl, bc
+	ld d, h
+	ld e, l
+	pop hl
+	call Function14ef
+	cp $1
+	jr nz, .asm_2543
+
+.asm_2530
+	ld a, [$cdc3]
+	call Function2f9
+	ld [$cdc3], a
+	ld a, $1
+	ld [wc0cf], a
+	ld a, $6
+	call Function1e31
+
+.asm_2543
+	ld a, [wc0cd]
+	and a
+	jr nz, .asm_2555
+	ld hl, $cef3
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, $cee3
+	ld [hl], e
+	inc hl
+	ld [hl], d
+
+.asm_2555
+	ld a, [wc0cf]
+	and a
+	jr nz, .asm_2567
+	ld hl, $cef5
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	ld hl, $cee5
+	ld [hl], e
+	inc hl
+	ld [hl], d
+
+.asm_2567
+	ret
+; 0x2568
+
+
+INCBIN "baserom.gb", $2568, $2570-$2568
 
 
 data_2570:
 
 
-INCBIN "baserom.gb", $2570, $2b2b-$2570
+INCBIN "baserom.gb", $2570, $2721-$2570
+
+
+Function2721: ; 0x2721
+	call Function1794
+	call Function15af
+	call Functiona94
+
+Function272a: ; 0x272a
+	ld a, [$4000]
+	push af
+	ld a, Bank(Function14001)
+	ld [MBC1RomBank], a
+	call Function14001
+	pop af
+	ld [MBC1RomBank], a
+	ret
+; 0x273b
+
+
+Function273b: ; 0x273b
+	call Function1794
+	call Function15af
+	call Functiona94
+	ld a, [$4000]
+	push af
+	ld a, Bank(Function140db)
+	ld [MBC1RomBank], a
+	call Function140db
+	pop af
+	ld [MBC1RomBank], a
+	ret
+; 0x2755
+
+
+Function2755: ; 0x2755
+	call Function1794
+	call Function15af
+	call Functiona94
+	jp Functione41
+; 0x2761
+
+
+Function2761: ; 0x2761
+	ld a, [$4000]
+	push af
+	ld a, Bank(Function14133)
+	ld [MBC1RomBank], a
+	call Function14133
+	pop af
+	ld [MBC1RomBank], a
+	ret
+; 0x2772
+
+
+Function2772: ; 0x2772
+	call Function1794
+	call Function15af
+	call Functiona94
+	ld a, [$4000]
+	push af
+	ld a, Bank(Function141c7)
+	ld [MBC1RomBank], a
+	call Function141c7
+	pop af
+	ld [MBC1RomBank], a
+	ret
+; 0x278c
+
+
+Function278c: ; 0x278c
+	ld hl, $ce77
+	add hl, bc
+	ld a, [hl]
+	and $f
+	dec a
+	ld [hl], a
+	jr nz, .asm_27b1
+	push hl
+	ld hl, $27d9
+	ld a, [wc0e8]
+	ld d, $0
+	ld e, a
+	add hl, de
+	ld a, [hl]
+	pop hl
+	ld [hl], a
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	inc a
+	and $f
+	ld [hl], a
+	call Function357.asm_364
+
+.asm_27b1
+	ld hl, $ce86
+	add hl, bc
+	ld a, [hl]
+	cp $8
+	jr c, .asm_27ce
+	ld [wc0cd], a
+	ld hl, wc0cd
+	ld a, $10
+	and a
+	sbc [hl]
+	push af
+	ld a, [wc0ca]
+	or $20
+	ld [wc0ca], a
+	pop af
+
+.asm_27ce
+	ld [wc0c7], a
+	ld hl, wc0c6
+	ld [hl], $b
+	jp Function2721
+; 0x27d9
+
+
+Function27d9: ; 0x27d9
+	dec bc
+	ld a, [bc]
+	ld a, [bc]
+	add hl, bc
+	add hl, bc
+	ld [$0607], sp
+	dec b
+	ld hl, $cde1
+	add hl, bc
+	ld a, [hl]
+	ld [wc0c7], a
+	ld a, [wc104]
+	and $7
+	jr nz, .asm_27f6
+	ld a, [hl]
+	inc a
+	and $1
+	ld [hl], a
+
+.asm_27f6
+	ld hl, wc0c6
+	ld [hl], $2
+	jp Function2721
+; 0x27fe
+
+
+Function27fe: ; 0x27fe
+	ld hl, wc0c6
+	ld [hl], $7
+	call Function283d.asm_2849
+	jp Function2811
+; 0x2809
+
+
+Function2809: ; 0x2809
+	ld hl, wc0c6
+	ld [hl], $6
+	call Function283d
+
+Function2811: ; 0x2811
+	ld hl, $cde1
+	add hl, bc
+	ld a, [hl]
+	ld [wc0c7], a
+	ld a, [wc104]
+	and $f
+	jr nz, .asm_2828
+	ld hl, $cde1
+	add hl, bc
+	ld a, [hl]
+	xor $1
+	ld [hl], a
+
+.asm_2828
+	jp Function2721
+; 0x282b
+
+
+Function282b: ; 0x282b
+	ld hl, $cf01
+	ld a, [hl]
+	srl a
+	ld [$c0d3], a
+	ld e, a
+	ld d, $0
+	ld hl, data_28a1
+	add hl, de
+	ld a, [hl]
+	ret
+; 0x283d
+
+
+Function283d: ; 0x283d
+	call Function282b
+	ld [wc0cd], a
+	xor a
+	ld [wc0cf], a
+	jr .asm_2853
+
+.asm_2849
+	call Function282b
+	ld [wc0cf], a
+	xor a
+	ld [wc0cd], a
+
+.asm_2853
+	ld b, $0
+	ld a, [$cee1]
+	ld c, a
+	call Function1773
+	ld a, [$c0d3]
+	srl a
+	srl a
+	srl a
+	ld d, $0
+	ld e, a
+	ld hl, $28cd
+	add hl, de
+	ld a, [hl]
+	ld hl, $cdc3
+	add hl, bc
+	ld [hl], a
+	ld a, [wc0cf]
+	ld e, $0
+	bit 7, a
+	jr z, .asm_287c
+	dec e
+
+.asm_287c
+	ld hl, $cee3
+	and a
+	add [hl]
+	ld [hl], a
+	ld a, [$cee4]
+	adc e
+	ld [$cee4], a
+	ld a, [wc0cd]
+	ld e, $0
+	bit 7, a
+	jr z, .asm_2893
+	dec e
+
+.asm_2893
+	ld hl, $cee5
+	and a
+	add [hl]
+	ld [hl], a
+	ld a, [$cee6]
+	adc e
+	ld [$cee6], a
+	ret
+; 0x28a1
+
+
+data_28a1: ; 0x28a1
+INCBIN "baserom.gb", $28a1, $2b2b-$28a1
 
 
 Function2b2b: ; 0x2b2b
@@ -2644,10 +5682,10 @@ Function2b2b: ; 0x2b2b
 
 .asm_2b39
 	ld a, $1
-	ld [$c10e], a
+	ld [wc10e], a
 	call Function3180
 	call ReadInputs
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 3, [hl]
 	jr nz, .asm_2b6e
 	bit 2, [hl]
@@ -2656,7 +5694,7 @@ Function2b2b: ; 0x2b2b
 	call Function2c3e
 	call Function2b6f
 	call Function17d6
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], $0
 	inc hl
 	ld [hl], $c0
@@ -2672,15 +5710,17 @@ Function2b2b: ; 0x2b2b
 
 Function2b6f: ; 0x2b6f
 	ld bc, $0000
+
+.asm_2b72
 	ld hl, $cd5a
 	add hl, bc
 	ld a, [hl]
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld hl, $cd78
 	add hl, bc
 	ld a, [hl]
-	ld [$c0cf], a
-	ld a, [$c104]
+	ld [wc0cf], a
+	ld a, [wc104]
 	and $3
 	jr nz, .asm_2ba5
 	ld hl, $cdb4
@@ -2690,7 +5730,7 @@ Function2b6f: ; 0x2b6f
 	add hl, bc
 	add [hl]
 	ld [hl], a
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld hl, $cdc3
 	add hl, bc
 	ld a, [hl]
@@ -2698,13 +5738,13 @@ Function2b6f: ; 0x2b6f
 	add hl, bc
 	add [hl]
 	ld [hl], a
-	ld [$c0cf], a
+	ld [wc0cf], a
 
 .asm_2ba5
 	push bc
-	ld a, [$c0ca]
+	ld a, [wc0ca]
 	or $80
-	ld [$c0ca], a
+	ld [wc0ca], a
 	ld hl, $cd4b
 	add hl, bc
 	ld a, [hl]
@@ -2715,7 +5755,7 @@ Function2b6f: ; 0x2b6f
 	inc bc
 	ld a, c
 	cp $5
-	jp c, $2b72
+	jp c, .asm_2b72
 	ret
 ; 0x2bc1
 
@@ -2723,6 +5763,8 @@ Function2b6f: ; 0x2b6f
 Function2bc1: ; 0x2bc1
 	xor a
 	ld [$cee1], a
+
+.asm_2bc5
 	ld a, [$cee1]
 	ld c, a
 	add a
@@ -2730,12 +5772,12 @@ Function2bc1: ; 0x2bc1
 	add c
 	ld c, a
 	ld b, $0
-	ld hl, $2c20
+	ld hl, data_2c20
 	add hl, bc
 	ld a, [hli]
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, [hli]
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld a, [hli]
 	ld [$c0d1], a
 	ld a, [hli]
@@ -2747,11 +5789,11 @@ Function2bc1: ; 0x2bc1
 	ld b, $0
 	ld hl, $cd4b
 	add hl, bc
-	ld a, [$c0cd]
+	ld a, [wc0cd]
 	ld [hl], a
 	ld hl, $cdb4
 	add hl, bc
-	ld a, [$c0cf]
+	ld a, [wc0cf]
 	ld [hl], a
 	ld hl, $cdc3
 	add hl, bc
@@ -2769,11 +5811,12 @@ Function2bc1: ; 0x2bc1
 	ld a, c
 	ld [$cee1], a
 	cp $5
-	jp c, $2bc5
+	jp c, .asm_2bc5
 	ret
 ; 0x2c20
 
 
+data_2c20: ; 0x2c20
 INCBIN "baserom.gb", $2c20, $2c3e-$2c20
 
 
@@ -2782,11 +5825,11 @@ Function2c3e: ; 0x2c3e
 	ld hl, $cd5a
 	add hl, bc
 	ld a, [hl]
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld hl, $cd78
 	add hl, bc
 	ld a, [hl]
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld hl, $cea4
 	add hl, bc
 	dec [hl]
@@ -2817,7 +5860,7 @@ Function2c3e: ; 0x2c3e
 
 .asm_2c80
 	ld [hl], a
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld hl, $cdc3
 	add hl, bc
 	ld a, [hl]
@@ -2825,14 +5868,14 @@ Function2c3e: ; 0x2c3e
 	add hl, bc
 	add [hl]
 	ld [hl], a
-	ld [$c0cf], a
+	ld [wc0cf], a
 
 .asm_2c92
 	ld hl, $cdf0
 	add hl, bc
 	ld a, [hl]
 	ld e, a
-	ld a, [$c104]
+	ld a, [wc104]
 	and e
 	jr nz, .asm_2ca3
 	ld hl, $cdd2
@@ -2914,9 +5957,9 @@ asm_2ced:
 	ld a, $7
 	ld [$cee1], a
 	ld a, [hli]
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, [hli]
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld a, [hli]
 	ld [$c0d0], a
 	ld a, [hli]
@@ -2936,11 +5979,11 @@ asm_2ced:
 	ld b, $0
 	ld hl, $cd4b
 	add hl, bc
-	ld a, [$c0cd]
+	ld a, [wc0cd]
 	ld [hl], a
 	ld hl, $cdb4
 	add hl, bc
-	ld a, [$c0cf]
+	ld a, [wc0cf]
 	ld [hl], a
 	ld hl, $cea4
 	add hl, bc
@@ -2985,18 +6028,18 @@ INCBIN "baserom.gb", $2d7c, $2dff-$2d7c
 
 Function2dff: ; 0x2dff
 	ld a, $1
-	ld [$c10e], a
+	ld [wc10e], a
 	call Function3180
 	call ReadInputs
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 3, [hl]
 	jr nz, .asm_2e6c
 	bit 2, [hl]
 	jr nz, .asm_2e6c
-	ld a, [$c0df]
+	ld a, [wc0df]
 	cp $0
 	jr z, .asm_2e52
-	ld a, [$c0de]
+	ld a, [wc0de]
 	and $1
 	jr nz, .asm_2e39
 	ld c, $1
@@ -3013,24 +6056,24 @@ Function2dff: ; 0x2dff
 	ld [$c112], a
 
 .asm_2e39
-	ld a, [$c0de]
+	ld a, [wc0de]
 	ld c, $1
 	ld b, $2
 	call Function101e
-	ld hl, $c10f
+	ld hl, wc10f
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	dec hl
 	ld a, l
-	ld [$c10f], a
+	ld [wc10f], a
 	ld a, h
 	ld [$c110], a
 
 .asm_2e52
 	call Function2e6f
 	call Function17d6
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], $0
 	inc hl
 	ld [hl], $c0
@@ -3049,11 +6092,11 @@ Function2dff: ; 0x2dff
 
 Function2e6f: ; 0x2e6f
 	xor a
-	ld [$c0ca], a
+	ld [wc0ca], a
 	ld a, $4b
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, $46
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld c, $11
 	xor a
 	call Function544
@@ -3084,9 +6127,9 @@ Function2e6f: ; 0x2e6f
 	ld hl, $2f66
 	add hl, bc
 	ld a, [hli]
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, [hli]
-	ld [$c0cf], a
+	ld [wc0cf], a
 	ld c, $15
 	ld a, [$ce77]
 	srl a
@@ -3103,32 +6146,32 @@ Function2e6f: ; 0x2e6f
 	call Function1752
 	call Function15af
 	ld a, $12
-	ld [$c0c6], a
+	ld [wc0c6], a
 	xor a
-	ld [$c0c7], a
+	ld [wc0c7], a
 	call Functione41
 	ld bc, $0001
 	call Function1752
 	call Function15af
 	ld a, $13
-	ld [$c0c6], a
-	ld a, [$c0de]
+	ld [wc0c6], a
+	ld a, [wc0de]
 	srl a
 	srl a
 	srl a
 	and $7
 	ld c, a
 	ld b, $0
-	ld hl, $2f4c
+	ld hl, data_2f4c
 	add hl, bc
 	ld a, [hl]
-	ld [$c0c7], a
+	ld [wc0c7], a
 	cp $ff
 	jr z, .asm_2f4b
-	ld a, [$c0df]
+	ld a, [wc0df]
 	and a
 	jr nz, .asm_2f30
-	ld a, [$c0de]
+	ld a, [wc0de]
 	cp $3f
 	jr c, .asm_2f42
 	srl a
@@ -3146,11 +6189,11 @@ Function2e6f: ; 0x2e6f
 
 .asm_2f30
 	call Functione41
-	ld a, [$c0de]
+	ld a, [wc0de]
 	and $f
 	jr nz, .asm_2f4b
-	ld a, $12
-	jp Function31a4
+	ld a, Sound_12
+	jp FarCall_StartMusic
 
 .asm_2f3f
 	jp Function31b3
@@ -3158,35 +6201,36 @@ Function2e6f: ; 0x2e6f
 .asm_2f42
 	cp $3d
 	jr nz, .asm_2f4b
-	ld a, $13
-	call Function31a4
+	ld a, Sound_13
+	call FarCall_StartMusic
 
 .asm_2f4b
 	ret
 ; 0x2f4c
 
 
+data_2f4c: ; 0x2f4c
 INCBIN "baserom.gb", $2f4c, $2f7b-$2f4c
 
 
 Function2f7b: ; 0x2f7b
 	ld a, $1
-	ld [$c10e], a
+	ld [wc10e], a
 	call Function3180
 	call ReadInputs
 	ld a, [$c0fd]
 	cp $0
-	ld hl, CurInputs
+	ld hl, hCurInputs
 	bit 2, [hl]
 	jr nz, .asm_2fc7
 	bit 3, [hl]
 	jr nz, .asm_2fc7
 	xor a
-	ld [$c0ca], a
+	ld [wc0ca], a
 	ld a, $4b
-	ld [$c0cd], a
+	ld [wc0cd], a
 	ld a, $3f
-	ld [$c0cf], a
+	ld [wc0cf], a
 	call Function313c
 	ld a, [hl]
 	cp $ff
@@ -3200,7 +6244,7 @@ Function2f7b: ; 0x2f7b
 
 .asm_2fb6
 	call Function17d6
-	ld hl, $c0c1
+	ld hl, wc0c1
 	ld [hl], $0
 	inc hl
 	ld [hl], $c0
@@ -3212,25 +6256,32 @@ Function2f7b: ; 0x2f7b
 ; 0x2fc8
 
 
-INCBIN "baserom.gb", $2fc8, $30d9-$2fc8
+data_2fc8: ; 0x2fc8 Cutscenes
+dw $2FDA, $2FF0, $3024, $302B, $3044, $304E, $305B, $3083, $309F
+
+data_2fda: ; 0x2fda
+
+INCBIN "baserom.gb", $2fda, $30d9-$2fda
 
 
-data_30d9:
+data_30d9: ; 0x30d9
 db 0, 1, 1, 1, 1, 2, 2, 2, 3
 
 
 Function30e2: ; 0x30e2
-	ld hl, $c104
+	ld hl, wc104
 	inc [hl]
+
 .asm_30e6
-	ld a, [$ff8c]
+	ld a, [hff8c]
 	and a
 	jr z, .asm_30e6
 	xor a
-	ld [$ff8c], a
-	ld a, [$c10e]
+	ld [hff8c], a
+	ld a, [wc10e]
 	or a
 	jr nz, .asm_30e6
+
 	ret
 ; 0x30f5
 
@@ -3240,7 +6291,7 @@ Function30f5: ; 0x30f5
 	ld l, a
 	ld h, $0
 	add hl, hl
-	ld de, $2fc8
+	ld de, data_2fc8
 	add hl, de
 	ld a, [hli]
 	ld h, [hl]
@@ -3291,7 +6342,7 @@ Function313c: ; 0x313c
 	ld l, a
 	ld h, $0
 	add hl, hl
-	ld de, $2fc8
+	ld de, data_2fc8
 	add hl, de
 	ld a, [hli]
 	ld h, [hl]
@@ -3323,17 +6374,18 @@ Function313c: ; 0x313c
 ; 0x316f
 
 
-Function316f: ; 0x316f
+Function316f_ResetHRam: ; 0x316f
 	ld a, $0
 	ld b, $3e
-	ld hl, $ffa0
+	ld hl, hffa0
 
 .asm_3176
 	ld [hli], a
 	dec b
 	jp nz, .asm_3176
+
 	ld a, $47
-	ld [$ffa0], a
+	ld [hffa0], a
 	ret
 ; 0x3180
 
@@ -3343,12 +6395,13 @@ Function3180: ; 0x3180
 	push bc
 	push de
 	push hl
-	ld a, [$ffa1]
+	ld a, [hffa1]
 	ld b, a
 	ld a, [wc105]
 	cp b
 	jr z, .asm_319f
-	ld [$ffa1], a
+
+	ld [hffa1], a
 	ld a, [$4000]
 	push af
 
@@ -3368,13 +6421,15 @@ Function3180: ; 0x3180
 ; 0x31a4
 
 
-Function31a4: ; 0x31a4
+; Input:
+; a = SongNr
+FarCall_StartMusic: ; 0x31a4
 	ld b, a
-	ld a, Bank(Function24004)
+	ld a, Bank(StartMusic)
 	ld [MBC1RomBank], a
 	ld a, b
 
-	call Function24004
+	call StartMusic
 
 	xor a
 	ld [MBC1RomBank], a
@@ -3426,14 +6481,191 @@ Call_ResetAndFullVolume: ; 0x31d3
 ; 0x31e0
 
 
-INCBIN "baserom.gb", $31e0, $3334-$31e0
+Function31e0: ; 0x31e0
+	ld a, $d
+	ld [$cf06], a
+	ld a, $5
+	ld [$cf07], a
+	ld bc, $0001
+	call Function3217.asm_3245
+	ld hl, $cf07
+	inc [hl]
+	ld b, $0
+	ld a, [wc0e8]
+	add $30
+	ld c, a
+	call Function3437
+	ld hl, $cf07
+	inc [hl]
+	ld hl, data_350a
+	ld bc, $0000
+	call Function3217.asm_3248
+	ld b, $0
+	ld a, [SubLevelNr]
+	add $30
+	ld c, a
+	jp Function3437
+; 0x3217
+
+
+Function3217: ; 0x3217
+	ld a, $f
+	ld [$cf06], a
+	ld a, $2
+	ld [$cf07], a
+	jr .asm_3245
+
+	ret
+
+	ld a, [$4000]
+	push af
+
+	ld a, Bank(Function1427a)
+	ld [MBC1RomBank], a
+	call Function1427a
+
+	pop af
+	ld [MBC1RomBank], a
+	ld a, $f
+	ld [$cf06], a
+	ld a, $1
+	ld [$cf07], a
+	ld hl, $cf1a
+	ld c, l
+	ld b, h
+	jr .asm_324d
+
+.asm_3245
+	ld hl, data_34c9
+
+.asm_3248
+	add hl, bc
+	add hl, bc
+	ld c, [hl]
+	inc hl
+	ld b, [hl]
+
+.asm_324d
+	ld a, [bc]
+	inc bc
+	cp $0
+	jr z, .asm_325f
+	push bc
+	call Function3437
+	pop bc
+	ld hl, $cf07
+	inc [hl]
+	jp .asm_324d
+
+.asm_325f
+	ret
+; 0x3260
+
+
+Function3260: ; 0x3260
+	ld a, $11
+	ld [$cf06], a
+	ld a, $2
+	ld [$cf07], a
+	ld hl, PasswordStrings
+	ld bc, $0000
+	call Function3217.asm_3248
+	ld b, $0
+	ld a, [wc0e8]
+	dec a
+	ld c, a
+	ld hl, PasswordStrings
+	jp Function3217.asm_3248
+; 0x3280
+
+
+Function3280: ; 0x3280
+	ld a, [wcaf6]
+	and $f
+	ld bc, $0003
+	call Function3334
+	ld a, [wcaf6]
+	srl a
+	srl a
+	srl a
+	srl a
+	ld bc, $0002
+	call Function3334
+	ld d, $0
+	ld a, [wc0e6]
+	dec a
+	cp $a
+	jr c, .asm_32ae
+	dec d
+.asm_32a7
+	inc d
+	sub $a
+	jr nc, .asm_32a7
+	add $a
+
+.asm_32ae
+	ld bc, $0026
+	call Function3334
+	ld a, d
+	dec bc
+	call Function3334
+	ld a, $a
+	dec bc
+	call Function3334
+	ld a, [$c0e3]
+	and $f
+	ld bc, $0008
+	call Function3334
+	ld a, [$c0e3]
+	srl a
+	srl a
+	srl a
+	srl a
+	ld bc, $0007
+	call Function3334
+	ld a, [$c0e2]
+	and $f
+	ld bc, $000a
+	call Function3334
+	ld a, [$c0e2]
+	srl a
+	srl a
+	srl a
+	srl a
+	ld bc, $0009
+	call Function3334
+	ld a, $0
+	ld bc, $000b
+	call Function3334
+	ld a, $0
+	ld bc, $000c
+	call Function3334
+	ld a, [wc0dc]
+	and $f
+	ld bc, $0012
+	call Function3334
+	ld a, [wc0dc]
+	srl a
+	srl a
+	srl a
+	srl a
+	ld bc, $0011
+	call Function3334
+	ld a, $c
+	ld bc, $0010
+	call Function3334
+	ld a, $d
+	ld bc, $0001
+	call Function3334
+	ret
+; 0x3334
 
 
 Function3334: ; 0x3334
 	ld hl, $cf2e
 	add [hl]
 	inc a
-	ld hl, $9e40
+	ld hl, StatusDisplay
 	add hl, bc
 	ld [hl], a
 	ret
@@ -3444,7 +6676,7 @@ Function333f: ; 0x333f
 	ld c, $34
 	ld a, [$cf2e]
 	ld e, a
-	ld hl, $9e40
+	ld hl, StatusDisplay
 .asm_3348
 	ld a, e
 	ld [hli], a
@@ -3452,10 +6684,10 @@ Function333f: ; 0x333f
 	ld a, c
 	and a
 	jr nz, .asm_3348
-	ld a, [$c0e8]
+	ld a, [wc0e8]
 	ld bc, $002d
 	call Function3334
-	ld a, [$c0e9]
+	ld a, [SubLevelNr]
 	ld bc, $002f
 	call Function3334
 	ld a, $b
@@ -3465,7 +6697,92 @@ Function333f: ; 0x333f
 ; 0x336a
 
 
-INCBIN "baserom.gb", $336a, $33f7-$336a
+Function336a: ; 0x336a
+	ld a, [$cf0a]
+	cp $1
+	jr z, .asm_337a
+	cp $2
+	jr z, .asm_33be
+	cp $3
+	jr z, .asm_337a
+	ret
+
+.asm_337a
+	ld a, [$cf08]
+	ld [$cf06], a
+	ld a, [$cf09]
+	ld [$cf07], a
+	ld a, [$cf0b]
+	ld l, a
+	ld a, [$cf0c]
+	ld h, a
+	ld a, [hl]
+	inc hl
+	push af
+	ld a, l
+	ld [$cf0b], a
+	ld a, h
+	ld [$cf0c], a
+	pop af
+	cp $0
+	jr z, .asm_33a9
+	call Function3437
+	ld a, [$cf07]
+	inc a
+	ld [$cf09], a
+	ret
+
+.asm_33a9
+	ld a, [$cf0a]
+	cp $1
+	jr nz, .asm_33b6
+	ld a, $2
+	ld [$cf0a], a
+	ret
+
+.asm_33b6
+	xor a
+	ld [$cf0a], a
+	ld [$c0eb], a
+	ret
+
+.asm_33be
+	ld a, $f
+	ld [$cf06], a
+	ld a, $b
+	ld [$cf07], a
+	ld bc, $0000
+.asm_33cb
+	ld hl, $cf0f
+	add hl, bc
+	ld a, c
+	ld e, a
+	ld a, [$cf13]
+	and $3
+	cp e
+	jr nz, .asm_33e4
+	ld a, [wc104]
+	and $8
+	jr nz, .asm_33e4
+	ld a, $20
+	jr .asm_33e7
+
+.asm_33e4
+	ld a, [hl]
+	add $41
+
+.asm_33e7
+	push bc
+	call Function3437
+	pop bc
+	ld hl, $cf07
+	inc [hl]
+	inc bc
+	ld a, c
+	cp $4
+	jr nz, .asm_33cb
+	ret
+; 0x33f7
 
 
 Function33f7: ; 0x33f7
@@ -3510,7 +6827,48 @@ asm_3421
 ; 0x3437
 
 
-INCBIN "baserom.gb", $3437, $34c9-$3437
+Function3437: ; 0x3437
+	sub $20
+	add $6a
+	ld e, a
+	xor a
+	adc $34
+	ld d, a
+	ld a, [de]
+	ld [$cf0e], a
+	xor a
+	ld b, a
+	ld a, [$cf06]
+	add b
+	ld e, a
+	ld d, $0
+	ld hl, data_34a5
+	add hl, de
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	xor a
+	ld e, a
+	add hl, de
+	ld a, [$cf07]
+	ld e, a
+	add hl, de
+	ld a, l
+	ld [$cf19], a
+	ld a, h
+	ld [$cf1a], a
+	ld a, [$cf0e]
+	ld [hl], a
+	ret
+; 0x346a
+
+
+INCBIN "baserom.gb", $346a, $34a5-$346a
+
+data_34a5: ; 0x34a5
+
+INCBIN "baserom.gb", $34a5, $34c9-$34a5
 
 
 data_34c9: ; 0x34c9
@@ -3529,39 +6887,286 @@ data_34f9: ; 0x34f9
 	db "PASSWORD:       ", 0
 
 data_350a: ; 0x350a
-dw $350C
+	dw .data_350c
 
-data_350c: ; 0x350c
-db "-", 0, "STORYBOARDS", 0, " KEITH ROBINSON", 0, "MUSIC", 0, " DAVE HAYES", 0, "ARRANGED BY", 0, " DAVE WARHOL", 0, " PRODUCED BY", 0, "  DAVE WARHOL", 0, " FOR", 0, "  REALTIME", 0, "  ASSOCIATES", 0, "                 ", 0
+.data_350c ; 0x350c
+	db "-", 0, "STORYBOARDS", 0, " KEITH ROBINSON", 0, "MUSIC", 0, " DAVE HAYES", 0, "ARRANGED BY", 0, " DAVE WARHOL", 0, " PRODUCED BY", 0, "  DAVE WARHOL", 0, " FOR", 0, "  REALTIME", 0, "  ASSOCIATES", 0, "                 ", 0
 
-data_359f: ; 0x359f
-dw data_35b1, data_35bc, data_35c1, data_35c6, data_35cb, data_35d0, data_35d5, data_35da, data_35df
+PasswordStrings: ; 0x359f
+	dw .data_35b1, .PasswordW2, .PasswordW3, .PasswordW4, .PasswordW5, .PasswordW6, .PasswordW7, .PasswordW8, .PasswordW1
 
-data_35b1: ; 0x35b1
-db "PASSWORD: ", 0
+.data_35b1 ; 0x35b1
+	db "PASSWORD: ", 0
 
-data_35bc: ; 0x35bc
-db "MNDC", 0
+.PasswordW2 ; 0x35bc
+	db "MNDC", 0
 
-data_35c1: ; 0x35c1
-db "MRGT", 0
+.PasswordW3 ; 0x35c1
+	db "MRGT", 0
 
-data_35c6: ; 0x35c6
-db "SHPH", 0
+.PasswordW4 ; 0x35c6
+	db "SHPH", 0
 
-data_35cb: ; 0x35cb
-db "JMMC", 0
+.PasswordW5 ; 0x35cb
+	db "JMMC", 0
 
-data_35d0: ; 0x35d0
-db "DHYS", 0
+.PasswordW6 ; 0x35d0
+	db "DHYS", 0
 
-data_35d5: ; 0x35d5
-db "LNRD", 0
+.PasswordW7 ; 0x35d5
+	db "LNRD", 0
 
-data_35da: ; 0x35da
-db "DVBN", 0
+.PasswordW8 ; 0x35da
+	db "DVBN", 0
 
-data_35df: ; 0x35df
-db "WRHL", 0
+.PasswordW1 ; 0x35df
+	db "WRHL", 0
 
-INCBIN "baserom.gb", $35e4, $4000-$35e4
+
+Function35e4: ; 0x35e4
+	push af
+	ld a, $a6
+	ld [rWX], a
+	ld a, $1
+	jr .asm_35ed
+
+.asm_35ed
+	ld [$cf33], a
+.asm_35f0
+	ld a, [rLY]
+	cp $92
+	jr c, .asm_35f0
+	xor a
+	ld [rWY], a
+	ld a, $e1
+	ld [rLCDC], a
+	xor a
+	ld [$cf36], a
+	ld a, $1
+	ld [$cf38], a
+.asm_3606
+	call Function3619
+	ld hl, $cf36
+	inc [hl]
+	ld a, [$cf38]
+	and a
+	jr nz, .asm_3606
+	ld a, $0
+	ld [rBGP], a
+	pop af
+	ret
+; 0x3619
+
+
+Function3619: ; 0x3619
+	ld a, [$cf38]
+	jr z, .asm_3648
+	ld a, [$cf36]
+	and $3f
+	jr nz, .asm_3648
+	ld a, [rWX]
+	ld c, a
+	ld hl, $cf33
+	bit 0, [hl]
+	jr z, .asm_3636
+	dec a
+	cp $9
+	jr c, .asm_363c
+	jr .asm_3646
+
+.asm_3636
+	ld a, c
+	inc a
+	cp $a3
+	jr c, .asm_3646
+
+.asm_363c
+	xor a
+	ld [$cf38], a
+	ld a, $83
+	ld [rLCDC], a
+	ld a, $a6
+
+.asm_3646
+	ld [rWX], a
+
+.asm_3648
+	ret
+; 0x3649
+
+
+Function3649: ; 0x3649
+	ld hl, data_3717
+	ld a, $e4
+	ld b, a
+	ld [$cf3a], a
+	ld d, $0
+	xor a
+	ld [$cf3b], a
+	ld a, $c
+	ld [$cf36], a
+	xor a
+	ld [$cf34], a
+	ld e, a
+	ld a, $32
+	ld [$cf37], a
+	ld a, $1
+	ld [$cf34], a
+	ld a, $92
+	ld [rLY], a
+	call Function367a
+	ld a, $d0
+	ld [rOBP0], a
+	ld [rOBP1], a
+	ret
+; 0x367a
+
+
+Function367a: ; 0x367a
+	ld a, [$cf34]
+	ld c, a
+.asm_367e
+	ld a, [rLY]
+	cp c
+	jr nz, .asm_367e
+	and $8
+	jr z, .asm_3690
+	ld a, $e4
+	ld b, a
+	ld d, $0
+	ld a, d
+	ld [rBGP], a
+	jp hl
+
+.asm_3690
+	ld a, $e4
+	ld d, a
+	ld b, $0
+	ld a, d
+	ld [rBGP], a
+	jp hl
+; 0x3699
+
+
+data_3699: ; 0x3699
+INCBIN "baserom.gb", $3699, $36cc-$3699
+
+
+Function36cc: ; 0x36cc
+	ld a, b
+	ld [rBGP], a
+	ld a, [$cf34]
+	inc a
+	cp $90
+	jr c, .asm_36ff
+	inc e
+	ld a, e
+	and $1
+	jr nz, .asm_36fe
+	ld a, [$cf37]
+	dec a
+	ld [$cf37], a
+	ld a, [$cf36]
+	inc a
+	push bc
+	ld b, $0
+	ld c, a
+	ld hl, data_3699
+	add hl, bc
+	pop bc
+	ld [$cf36], a
+	cp $32
+	jr c, .asm_36fe
+	xor a
+	ld [$cf38], a
+	jr .asm_3716
+
+.asm_36fe
+	xor a
+
+.asm_36ff
+	ld [$cf34], a
+	and $8
+	jp nz, Function367a
+	ld a, [$cf37]
+	push bc
+	ld b, $0
+	ld c, a
+	ld hl, data_3717
+	add hl, bc
+	pop bc
+	jp Function367a
+
+.asm_3716
+	ret
+; 0x3717
+
+
+data_3717: ; 0x3717
+INCBIN "baserom.gb", $3717, $374a-$3717
+
+
+Function374a: ; 0x374a
+	ld a, b
+	ld [rBGP], a
+	ld a, [$cf34]
+	inc a
+	cp $90
+	jr c, .asm_3776
+	inc e
+	ld a, e
+	and $1
+	jr nz, .asm_3775
+	ld a, [$cf37]
+	dec a
+	push bc
+	ld b, $0
+	ld c, a
+	ld hl, data_3717
+	add hl, bc
+	pop bc
+	ld [$cf37], a
+	cp $1
+	jr nc, .asm_3775
+	xor a
+	ld [$cf38], a
+	jr .asm_378d
+
+.asm_3775
+	xor a
+
+.asm_3776
+	ld [$cf34], a
+	and $8
+	jp z, Function367a
+	ld a, [$cf36]
+	push bc
+	ld b, $0
+	ld c, a
+	ld hl, data_3699
+	add hl, bc
+	pop bc
+	jp Function367a
+
+.asm_378d
+	ret
+; 0x378e
+
+
+INCBIN "baserom.gb", $378e, $3fdf-$378e
+
+
+Function3fdf: ; 0x3fdf
+	ld a, [$c0ac]
+	ld [$cf2e], a
+	ld de, $3e3a
+	call Function141c
+	ld hl, $c0b0
+	ld [hl], $0
+	inc hl
+	ld [hl], $98
+	jp Function12e5
+; 0x3ff6
+
+
+INCBIN "baserom.gb", $3ff6, $4000-$3ff6
