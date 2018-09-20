@@ -35,8 +35,6 @@ Start::
 INCLUDE "start.asm"
 
 
-;INCLUDE "bank03.asm"
-
 ;INCLUDE "bank04.asm"
 
 ;INCLUDE "bank05.asm"
@@ -51,10 +49,8 @@ INCLUDE "bank01.asm"
 
 INCLUDE "bank02.asm"
 
+INCLUDE "bank03.asm"
 
-SECTION "bank3", ROMX, BANK[$3]
-
-INCBIN "baserom.gb", 16384*3, $4000
 
 SECTION "bank4", ROMX, BANK[$4]
 

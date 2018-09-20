@@ -102,11 +102,15 @@ wc10e:: ds 1
 wc10f:: ds $11f-$10f
 wLevelNr:: ds 1 ; 0xc11f 0 - 64
 wc120:: ds $af1-$120
-wcaf1:: ds 1
-wcaf2:: ds 3
+wcaf1_NrOfObjects:: ds 1
+wcaf2_RomBank:: ds 1
+wcaf3:: ds 1
+wcaf4:: ds 1
 wcaf5:: ds 1
 wcaf6:: ds 1
-wcaf7:: ds 1
+wcaf7:: ds $ccfb-$caf7
+wccfb:: ds 1
+wccfc:: ds 1
 
 
 SECTION "WRAM 1", WRAMX, BANK [1]
