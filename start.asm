@@ -8289,11 +8289,11 @@ dw $3, $7FD5, $3, $7FD7, $3, $7FD9, $3, $7FDB, $3, $7FDD, $3, $7FDF, $3, $7FE1, 
 dw $3, $7FE5
 
 data_3cbe: ; 0x3cbe Object data
-; RomBank, ?, Adr
-db Bank(data_37fe7), $04, $E7, $7F
-db $04, $08, $AD, $7F
-db $05, $10, $9D, $58
-db $05, $0D, $ED, $58
+; address, NrOfObjects
+	ObjListPtr data_37fe7, 4 ; 1-1
+db $04, $08, $AD, $7F ; 1-2
+	ObjListPtr data_5589d, 16 ; 1-3
+	ObjListPtr data_558ed, 13 ; 1-4
 db $05, $1D, $2E, $59
 db $05, $0E, $BF, $59
 db $05, $13, $05, $5A
@@ -8354,7 +8354,7 @@ db $05, $22, $9C, $72
 db $05, $04, $46, $73
 db $05, $0B, $5A, $73
 db $05, $29, $91, $73
-db $03, $01, $FB, $7F
+db Bank(data_37ffb), $01, $FB, $7F
 
 data_3dc2: ; 0x3dc2
 db $05, $00, $5E, $74

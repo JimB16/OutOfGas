@@ -56,9 +56,9 @@ SECTION "bank4", ROMX, BANK[$4]
 
 INCBIN "baserom.gb", 16384*4, $4000
 
-SECTION "bank5", ROMX, BANK[$5]
 
-INCBIN "baserom.gb", 16384*5, $4000
+INCLUDE "bank05.asm"
+
 
 SECTION "bank6", ROMX, BANK[$6]
 

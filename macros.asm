@@ -7,3 +7,9 @@ farcall: MACRO ; bank, address
 romfill: MACRO
 INCBIN "baserom.gb",\1,\2 - \1
 ENDM
+
+ObjListPtr: MACRO ; address, NrOfObjects
+	db BANK(\1)
+	db \2
+	dw \1
+ENDM
