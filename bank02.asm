@@ -3,7 +3,7 @@
 SECTION "bank2", ROMX, BANK[$2]
 
 
-Unknown_2_4000: ; 2:4000
+Bank2Start: ; 2:4000
 	db 2
 
 
@@ -89,6 +89,7 @@ Function2403c: ; 2:403c
 	dec a
 	ld [hffa3], a
 	ret nz
+
 	ld a, [hffa4]
 	ld l, a
 	ld a, [hffa5]
@@ -96,7 +97,7 @@ Function2403c: ; 2:403c
 .asm_8056
 	ld a, [hli]
 	cp $0
-	jp z, Function240c7
+	jp z, .asm_80c7
 	cp $1
 	jr z, .asm_80aa
 	cp $2
@@ -109,12 +110,12 @@ Function2403c: ; 2:403c
 	jr z, .asm_8080
 	sub $4
 	ld [hffa3], a
-	jp z, Function240f2
+	jp z, .asm_80f2
 	ld b, a
 	ld a, [hffa6]
 	add b
 	ld [hffa3], a
-	jp Function240f2
+	jp .asm_80f2
 
 .asm_8080
 	call Function243ab
@@ -171,10 +172,8 @@ Function2403c: ; 2:403c
 	ld a, $ff
 	ld [hffa8], a
 	jp .asm_8056
-; 0x80c7
 
-
-Function240c7: ; 2:40c7
+.asm_80c7
 	ld a, $1
 	ld [rNR10], a
 	xor a
@@ -201,10 +200,8 @@ Function240c7: ; 2:40c7
 	ld a, $ff
 	ld [hffa7], a
 	jp Function2403c.asm_8056
-; 0x80f2
 
-
-Function240f2: ; 2:40f2
+.asm_80f2
 	ld a, l
 	ld [hffa4], a
 	ld a, h
@@ -217,6 +214,7 @@ Function240f9: ; 2:40f9
 	ld a, [$ffb4]
 	or a
 	ret nz
+
 	ld a, [$ffb1]
 	or a
 	jp nz, Function2410b

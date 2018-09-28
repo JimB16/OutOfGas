@@ -2,44 +2,92 @@
 
 SECTION "bank5", ROMX, BANK[$5]
 
-; 5:4000
+Bank5Start: ; 5:4000
 
 INCBIN "baserom.gb", 16384*5+$0, $189d-$0
 
 data_5589d: ; 5:589d
-db $0A, $8B, $00, $10, $01
-db $0A, $8B, $00, $30, $01
-db $0A, $CB, $00, $D0, $00
-db $0A, $CB, $00, $70, $01
-db $3C, $15, $01, $93, $01
-db $3C, $15, $01, $B3, $00
-db $3D, $55, $01, $D3, $00
-db $3D, $55, $01, $73, $01
-db $3D, $75, $01, $D3, $00
-db $3D, $75, $01, $73, $01
-db $3C, $B5, $01, $B3, $00
-db $3C, $B5, $01, $93, $01
-db $0A, $EB, $01, $D0, $00
-db $0A, $EB, $01, $70, $01
-db $0A, $2B, $02, $10, $01
-db $0A, $2B, $02, $30, $01
+	Object $0A, $8B, $110
+	Object $0A, $8B, $130
+	Object $0A, $CB, $D0
+	Object $0A, $CB, $170
+	Object $3C, $115, $193
+	Object $3C, $115, $B3
+	Object $3D, $155, $D3
+	Object $3D, $155, $173
+	Object $3D, $175, $D3
+	Object $3D, $175, $173
+	Object $3C, $1B5, $B3
+	Object $3C, $1B5, $193
+	Object $0A, $1EB, $D0
+	Object $0A, $1EB, $170
+	Object $0A, $22B, $110
+	Object $0A, $22B, $130
 
 data_558ed: ; 5:58ed
-db $0B, $AB, $00, $B0, $00
-db $0D, $AB, $00, $30, $01
-db $0F, $AB, $00, $B0, $01
-db $11, $AB, $00, $30, $02
-db $13, $AB, $00, $B0, $02
-db $04, $03, $01, $F2, $01
-db $04, $03, $01, $72, $02
-db $04, $04, $01, $F6, $00
-db $04, $04, $01, $72, $01
-db $0C, $6B, $01, $F0, $00
-db $0E, $6B, $01, $70, $01
-db $12, $6B, $01, $70, $02
-db $10, $6B, $01, $F0, $01
+	Object $0B, $AB, $B0
+	Object $0D, $AB, $130
+	Object $0F, $AB, $1B0
+	Object $11, $AB, $230
+	Object $13, $AB, $2B0
+	Object $04, $103, $1F2
+	Object $04, $103, $272
+	Object $04, $104, $F6
+	Object $04, $104, $172
+	Object $0C, $16B, $F0
+	Object $0E, $16B, $170
+	Object $12, $16B, $270
+	Object $10, $16B, $1F0
 
-; 5:592e
+data_5592E: ; 5:592e
 
-INCBIN "baserom.gb", 16384*5+$192e, $4000-$192e
+INCBIN "baserom.gb", 16384*5+$192e, $19bf-$192e
+
+data_559BF: ; 5:59bf
+
+INCBIN "baserom.gb", 16384*5+$19bf, $1a05-$19bf
+
+data_55A05: ; 5:5a05
+
+INCBIN "baserom.gb", 16384*5+$1a05, $1a64-$1a05
+
+data_55A64: ; 5:5a64
+
+INCBIN "baserom.gb", 16384*5+$1a64, $1b27-$1a64
+
+data_55B27: ; 5:5b27
+
+INCBIN "baserom.gb", 16384*5+$1b27, $1b81-$1b27
+
+data_55B81: ; 5:5b81
+
+INCBIN "baserom.gb", 16384*5+$1b81, $1bd6-$1b81
+
+data_55BD6: ; 5:5bd6
+
+INCBIN "baserom.gb", 16384*5+$1bd6, $1c26-$1bd6
+
+data_55C26: ; 5:5c26
+
+INCBIN "baserom.gb", 16384*5+$1c26, $1c5d-$1c26
+
+data_55C5D: ; 5:5c5d
+
+INCBIN "baserom.gb", 16384*5+$1c5d, $1d0c-$1c5d
+
+data_55D0C: ; 5:5d0c
+
+INCBIN "baserom.gb", 16384*5+$1d0c, $1d84-$1d0c
+
+data_55D84: ; 5:5d84
+
+INCBIN "baserom.gb", 16384*5+$1d84, $1dc5-$1d84
+
+data_55DC5: ; 5:5dc5
+
+INCBIN "baserom.gb", 16384*5+$1dc5, $345e-$1dc5
+
+data_5745e: ; 5:745e
+
+INCBIN "baserom.gb", 16384*5+$345e, $4000-$345e
 

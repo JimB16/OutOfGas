@@ -272,7 +272,7 @@ Function2ef: ; 0x2ef
 ; 0x2f9
 
 
-Function2f9: ; 0x2f9
+NegAcc: ; 0x2f9
 	xor $ff
 	add $1
 	ret
@@ -824,6 +824,9 @@ Function59e: ; 0x59e
 	add hl, bc
 	ld a, [hl]
 	call FarCall_StartMusic
+	;nop
+	;nop
+	;nop
 
 	xor a
 	ld [wc0db], a
@@ -1565,7 +1568,7 @@ Functionb64: ; 0xb64
 	ld c, a
 	push bc
 
-	ld hl, data_3bba
+	ld hl, LevelSize
 	add hl, bc
 	ld a, [hli]
 	ld [MBC1RomBank], a
@@ -1575,12 +1578,12 @@ Functionb64: ; 0xb64
 	ld l, a
 	ld a, [hli]
 	inc a
-	ld [wccfb], a
+	ld [wccfb_LevelSize], a
 	ld a, [hli]
 	inc a
-	ld [wccfc], a
+	ld [wccfc_LevelSize], a
 
-	ld hl, data_3ab6
+	ld hl, LevelData
 	add hl, bc
 	ld a, [hli]
 	ld [MBC1RomBank], a
@@ -1588,19 +1591,19 @@ Functionb64: ; 0xb64
 	ld a, [hli]
 	ld d, [hl]
 	ld e, a
-	call Function13d7
+	call LevelDataDecompression
 
 	pop bc
-	ld hl, data_3cbe
+	ld hl, ObjectListPtrs
 	add hl, bc
 	ld a, [hli]
-	ld [wcaf2_RomBank], a
+	ld [wcaf2_BankObjectList], a
 	ld a, [hli]
 	ld [wcaf1_NrOfObjects], a
 	ld a, [hli]
-	ld [wcaf3], a
+	ld [wcaf3_AdrHiObjectList], a
 	ld a, [hl]
-	ld [wcaf4], a
+	ld [wcaf4_AdrLoObjectList], a
 
 	ld hl, data_39b2
 	add hl, bc
@@ -1642,10 +1645,10 @@ Functionb64: ; 0xb64
 	inc hl
 	ld [hl], $0
 
-	ld a, [wccfc]
+	ld a, [wccfc_LevelSize]
 	ld e, a
 	ld d, $0
-	ld a, [$c12d]
+	ld a, [wc12d]
 	ld b, a
 	ld hl, $c12e
 	ld a, [$ccff]
@@ -1945,6 +1948,7 @@ Functionded: ; 0xded
 	ld hl, $c0b5
 	add hl, bc
 	ld a, [de]
+
 	inc de
 	inc de
 	ld [hli], a
@@ -1952,6 +1956,7 @@ Functionded: ; 0xded
 	inc de
 	ld [hli], a
 	ld a, [de]
+
 	inc de
 	ld [hli], a
 	ld hl, $c0b8
@@ -2235,7 +2240,7 @@ Functionf5d: ; 0xf5d
 
 
 Functionf8a: ; 0xf8a
-	ld a, [wccfc]
+	ld a, [wccfc_LevelSize]
 	ld e, a
 	ld d, $0
 	ld h, d
@@ -2249,7 +2254,7 @@ Functionf8a: ; 0xf8a
 	jr .asm_f95
 
 .asm_f9d
-	ld de, $c12d
+	ld de, wc12d
 	add hl, de
 	ld a, [$c11d]
 	ld e, a
@@ -2542,9 +2547,9 @@ Function10e4: ; 0x10e4
 
 .asm_1116
 	call Functionf8a
-	ld a, [$c12d]
+	ld a, [wc12d]
 	ld c, a
-	ld a, [wccfc]
+	ld a, [wccfc_LevelSize]
 	ld e, a
 	ld d, $0
 .asm_1123
@@ -2586,7 +2591,7 @@ Function10e4: ; 0x10e4
 
 .asm_1150
 	call Functionf8a
-	ld a, [$c12d]
+	ld a, [wc12d]
 	ld c, a
 .asm_1157
 	ld a, [hli]
@@ -2653,7 +2658,7 @@ Function115e: ; 0x115e
 	ld hl, $c11e
 	inc [hl]
 	pop hl
-	ld a, [wccfc]
+	ld a, [wccfc_LevelSize]
 	ld e, a
 	ld d, $0
 	add hl, de
@@ -2871,7 +2876,7 @@ Function12cc: ; 0x12cc
 
 .asm_12d4
 	ld a, [rLY]
-	cp $91
+	cp 145
 	jr c, .asm_12d4
 
 	ld a, [rLCDC]
@@ -3036,8 +3041,10 @@ Function12e5: ; 0x12e5
 ; 0x13d7
 
 
-Function13d7: ; 0x13d7
-	ld hl, $c12d
+; Input:
+; de = Ptr to LevelData (Data in RLE)
+LevelDataDecompression: ; 0x13d7
+	ld hl, wc12d
 .asm_13da
 	ld a, [de]
 	cp $ff ; reached end?
@@ -3054,7 +3061,9 @@ Function13d7: ; 0x13d7
 .asm_13eb
 	ld a, [de]
 	ld [hli], a
+
 	call Function3180
+
 	ld a, [$c0ad]
 	cp $0
 	jr z, .asm_13f8
@@ -3482,7 +3491,7 @@ Function1616: ; 0x1616
 
 
 Function163a: ; 0x163a
-	ld hl, wcaf3
+	ld hl, wcaf3_AdrHiObjectList
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -3490,7 +3499,7 @@ Function163a: ; 0x163a
 
 .asm_1641
 	ld [wcaf5], a
-	ld a, [wcaf2_RomBank]
+	ld a, [wcaf2_BankObjectList]
 	ld [MBC1RomBank], a
 	push hl
 	ld a, [hli]
@@ -3783,14 +3792,14 @@ Function17d6: ; 0x17d6
 Function17eb: ; 0x17eb
 	ld a, $0
 	ld [wcaf6], a
-	ld hl, wcaf3
+	ld hl, wcaf3_AdrHiObjectList
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	xor a
 .asm_17f7
 	ld [wcaf5], a
-	ld a, [wcaf2_RomBank]
+	ld a, [wcaf2_BankObjectList]
 	ld [MBC1RomBank], a
 	ld a, [hl]
 	cp 10
@@ -4576,11 +4585,11 @@ db $26, $18, $00, $E8, $DA, $E8, $00, $18
 
 Function1d39: ; 0x1d39
 	ld a, [$cdb4]
-	call Function2f9
+	call NegAcc
 	call Function1d56
 	ld [$cdb4], a
 	ld a, [$cdc3]
-	call Function2f9
+	call NegAcc
 	call Function1d56
 	ld [$cdc3], a
 	ld a, $17
@@ -5701,7 +5710,7 @@ Function2454: ; 0x2454
 
 .asm_24ba
 	ld a, [$cdb4]
-	call Function2f9
+	call NegAcc
 	ld [$cdb4], a
 	ld a, $6
 	call Function1e31
@@ -5773,7 +5782,7 @@ Function2454: ; 0x2454
 
 .asm_2530
 	ld a, [$cdc3]
-	call Function2f9
+	call NegAcc
 	ld [$cdc3], a
 	ld a, $1
 	ld [wc0cf], a
@@ -7466,6 +7475,7 @@ Function3180: ; 0x3180
 	push bc
 	push de
 	push hl
+
 	ld a, [hffa1]
 	ld b, a
 	ld a, [wc105]
@@ -8231,43 +8241,223 @@ Function374a: ; 0x374a
 
 
 data_378e: ; 0x378e
-dw $1, $4000, $2, $4000, $3, $4000, $4, $4000, $5, $4000, $6, $4000, $7, $4000
+	BankAddr Bank1Start
+	BankAddr Bank2Start
+	BankAddr Bank3Start
+dw $4, $4000
+	BankAddr Bank5Start
+dw $6, $4000, $7, $4000
 
-data_37aa: ; 0x37aa
-dw Bank(data_14a5b), data_14a5b, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B
-dw $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B
-dw $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB
-dw $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B
-dw $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B
-dw $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB, $1, $52BB
-dw $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B, $1, $4E6B
-dw $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B, $1, $4A5B
-dw $1, $571B
+data_37aa: ; 0x37aa Pointer to Tilesets
+	BankAddr data_14a5b ; 1-1
+	BankAddr data_14a5b ; 1-2
+	BankAddr data_14a5b ; 1-3
+	BankAddr data_14a5b ; 1-4
+	BankAddr data_14a5b ; 1-5
+	BankAddr data_14a5b ; 1-6
+	BankAddr data_14a5b ; 1-7
+	BankAddr data_14a5b ; 1-8
+	BankAddr data_14e6b ; 2-1
+	BankAddr data_14e6b ; 2-2
+	BankAddr data_14e6b ; 2-3
+	BankAddr data_14e6b ; 2-4
+	BankAddr data_14e6b ; 2-5
+	BankAddr data_14e6b ; 2-6
+	BankAddr data_14e6b ; 2-7
+	BankAddr data_14e6b ; 2-8
+	BankAddr data_152bb ; 3-1
+	BankAddr data_152bb ; 3-2
+	BankAddr data_152bb ; 3-3
+	BankAddr data_152bb ; 3-4
+	BankAddr data_152bb ; 3-5
+	BankAddr data_152bb ; 3-6
+	BankAddr data_152bb ; 3-7
+	BankAddr data_152bb ; 3-8
+	BankAddr data_14a5b ; 4-1
+	BankAddr data_14a5b ; 4-2
+	BankAddr data_14a5b ; 4-3
+	BankAddr data_14a5b ; 4-4
+	BankAddr data_14a5b ; 4-5
+	BankAddr data_14a5b ; 4-6
+	BankAddr data_14a5b ; 4-7
+	BankAddr data_14a5b ; 4-8
+	BankAddr data_14e6b ; 5-1
+	BankAddr data_14e6b ; 5-2
+	BankAddr data_14e6b ; 5-3
+	BankAddr data_14e6b ; 5-4
+	BankAddr data_14e6b ; 5-5
+	BankAddr data_14e6b ; 5-6
+	BankAddr data_14e6b ; 5-7
+	BankAddr data_14e6b ; 5-8
+	BankAddr data_152bb ; 6-1
+	BankAddr data_152bb ; 6-2
+	BankAddr data_152bb ; 6-3
+	BankAddr data_152bb ; 6-4
+	BankAddr data_152bb ; 6-5
+	BankAddr data_152bb ; 6-6
+	BankAddr data_152bb ; 6-7
+	BankAddr data_152bb ; 6-8
+	BankAddr data_14e6b ; 7-1
+	BankAddr data_14e6b ; 7-2
+	BankAddr data_14e6b ; 7-3
+	BankAddr data_14e6b ; 7-4
+	BankAddr data_14e6b ; 7-5
+	BankAddr data_14e6b ; 7-6
+	BankAddr data_14e6b ; 7-7
+	BankAddr data_14e6b ; 7-8
+	BankAddr data_14a5b ; 8-1
+	BankAddr data_14a5b ; 8-2
+	BankAddr data_14a5b ; 8-3
+	BankAddr data_14a5b ; 8-4
+	BankAddr data_14a5b ; 8-5
+	BankAddr data_14a5b ; 8-6
+	BankAddr data_14a5b ; 8-7
+	BankAddr data_14a5b ; 8-8
+	BankAddr data_1571b
 
 data_38ae: ; 0x38ae
-dw Bank(data_1581b), data_1581b, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B
-dw $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057
-dw $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716
-dw $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B
-dw $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057
-dw $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716, $1, $6716
-dw $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057, $1, $6057
-dw $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B, $1, $581B
-dw $1, $6EED
+	BankAddr data_1581b ; 1-1
+	BankAddr data_1581b ; 1-2
+	BankAddr data_1581b ; 1-3
+	BankAddr data_1581b ; 1-4
+	BankAddr data_1581b ; 1-5
+	BankAddr data_1581b ; 1-6
+	BankAddr data_1581b ; 1-7
+	BankAddr data_1581b ; 1-8
+	BankAddr data_16057 ; 2-1
+	BankAddr data_16057 ; 2-2
+	BankAddr data_16057 ; 2-3
+	BankAddr data_16057 ; 2-4
+	BankAddr data_16057 ; 2-5
+	BankAddr data_16057 ; 2-6
+	BankAddr data_16057 ; 2-7
+	BankAddr data_16057 ; 2-8
+	BankAddr data_16716 ; 3-1
+	BankAddr data_16716 ; 3-2
+	BankAddr data_16716 ; 3-3
+	BankAddr data_16716 ; 3-4
+	BankAddr data_16716 ; 3-5
+	BankAddr data_16716 ; 3-6
+	BankAddr data_16716 ; 3-7
+	BankAddr data_16716 ; 3-8
+	BankAddr data_1581b ; 4-1
+	BankAddr data_1581b ; 4-2
+	BankAddr data_1581b ; 4-3
+	BankAddr data_1581b ; 4-4
+	BankAddr data_1581b ; 4-5
+	BankAddr data_1581b ; 4-6
+	BankAddr data_1581b ; 4-7
+	BankAddr data_1581b ; 4-8
+	BankAddr data_16057 ; 5-1
+	BankAddr data_16057 ; 5-2
+	BankAddr data_16057 ; 5-3
+	BankAddr data_16057 ; 5-4
+	BankAddr data_16057 ; 5-5
+	BankAddr data_16057 ; 5-6
+	BankAddr data_16057 ; 5-7
+	BankAddr data_16057 ; 5-8
+	BankAddr data_16716 ; 6-1
+	BankAddr data_16716 ; 6-2
+	BankAddr data_16716 ; 6-3
+	BankAddr data_16716 ; 6-4
+	BankAddr data_16716 ; 6-5
+	BankAddr data_16716 ; 6-6
+	BankAddr data_16716 ; 6-7
+	BankAddr data_16716 ; 6-8
+	BankAddr data_16057 ; 7-1
+	BankAddr data_16057 ; 7-2
+	BankAddr data_16057 ; 7-3
+	BankAddr data_16057 ; 7-4
+	BankAddr data_16057 ; 7-5
+	BankAddr data_16057 ; 7-6
+	BankAddr data_16057 ; 7-7
+	BankAddr data_16057 ; 7-8
+	BankAddr data_1581b ; 8-1
+	BankAddr data_1581b ; 8-2
+	BankAddr data_1581b ; 8-3
+	BankAddr data_1581b ; 8-4
+	BankAddr data_1581b ; 8-5
+	BankAddr data_1581b ; 8-6
+	BankAddr data_1581b ; 8-7
+	BankAddr data_1581b ; 8-8
+	BankAddr data_16eed
 
 data_39b2: ; 0x39b2
-dw Bank(data_173f0), data_173f0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0
-dw Bank(data_173fa), data_173fa, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA
-dw $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404
-dw $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0
-dw $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA
-dw $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404, $1, $7404
-dw $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA, $1, $73FA
-dw $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0, $1, $73F0
-dw $1, $740E
+	BankAddr data_173f0 ; 1-1
+	BankAddr data_173f0 ; 1-2
+	BankAddr data_173f0 ; 1-3
+	BankAddr data_173f0 ; 1-4
+	BankAddr data_173f0 ; 1-5
+	BankAddr data_173f0 ; 1-6
+	BankAddr data_173f0 ; 1-7
+	BankAddr data_173f0 ; 1-8
+	BankAddr data_173fa ; 2-1
+	BankAddr data_173fa ; 2-2
+	BankAddr data_173fa ; 2-3
+	BankAddr data_173fa ; 2-4
+	BankAddr data_173fa ; 2-5
+	BankAddr data_173fa ; 2-6
+	BankAddr data_173fa ; 2-7
+	BankAddr data_173fa ; 2-8
+	BankAddr data_17404 ; 3-1
+	BankAddr data_17404 ; 3-2
+	BankAddr data_17404 ; 3-3
+	BankAddr data_17404 ; 3-4
+	BankAddr data_17404 ; 3-5
+	BankAddr data_17404 ; 3-6
+	BankAddr data_17404 ; 3-7
+	BankAddr data_17404 ; 3-8
+	BankAddr data_173f0 ; 4-1
+	BankAddr data_173f0 ; 4-2
+	BankAddr data_173f0 ; 4-3
+	BankAddr data_173f0 ; 4-4
+	BankAddr data_173f0 ; 4-5
+	BankAddr data_173f0 ; 4-6
+	BankAddr data_173f0 ; 4-7
+	BankAddr data_173f0 ; 4-8
+	BankAddr data_173fa ; 5-1
+	BankAddr data_173fa ; 5-2
+	BankAddr data_173fa ; 5-3
+	BankAddr data_173fa ; 5-4
+	BankAddr data_173fa ; 5-5
+	BankAddr data_173fa ; 5-6
+	BankAddr data_173fa ; 5-7
+	BankAddr data_173fa ; 5-8
+	BankAddr data_17404 ; 6-1
+	BankAddr data_17404 ; 6-2
+	BankAddr data_17404 ; 6-3
+	BankAddr data_17404 ; 6-4
+	BankAddr data_17404 ; 6-5
+	BankAddr data_17404 ; 6-6
+	BankAddr data_17404 ; 6-7
+	BankAddr data_17404 ; 6-8
+	BankAddr data_173fa ; 7-1
+	BankAddr data_173fa ; 7-2
+	BankAddr data_173fa ; 7-3
+	BankAddr data_173fa ; 7-4
+	BankAddr data_173fa ; 7-5
+	BankAddr data_173fa ; 7-6
+	BankAddr data_173fa ; 7-7
+	BankAddr data_173fa ; 7-8
+	BankAddr data_173f0 ; 8-1
+	BankAddr data_173f0 ; 8-2
+	BankAddr data_173f0 ; 8-3
+	BankAddr data_173f0 ; 8-4
+	BankAddr data_173f0 ; 8-5
+	BankAddr data_173f0 ; 8-6
+	BankAddr data_173f0 ; 8-7
+	BankAddr data_173f0 ; 8-8
+	BankAddr data_1740e
 
-data_3ab6: ; 0x3ab6
-dw Bank(data_17418), data_17418, $1, $74B1, $1, $7568, $1, $7681, $1, $77AC, $1, $78C2, $1, $7A5A, $1, $7D2E
+LevelData: ; 0x3ab6
+	BankAddr data_17418 ; 1-1
+	BankAddr data_174b1 ; 1-2
+	BankAddr data_17568 ; 1-3
+	BankAddr data_17681 ; 1-4
+	BankAddr data_177ac ; 1-5
+	BankAddr data_178c2 ; 1-6
+	BankAddr data_17a5a ; 1-7
+	BankAddr data_17d2e ; 1-8
 dw $2, $72E7, $2, $73DC, $2, $759C, $2, $77A5, $2, $7994, $2, $7C2A, $2, $7E2D, $3, $4001
 dw $3, $42A9, $3, $45AE, $3, $4939, $3, $4B80, $3, $4E21, $3, $4F72, $3, $5161, $3, $53ED
 dw $3, $56DB, $3, $58D1, $3, $5A91, $3, $5C5F, $3, $5D87, $3, $604A, $3, $6280, $3, $6693
@@ -8277,9 +8467,23 @@ dw $4, $6115, $4, $638E, $4, $6539, $4, $6821, $4, $6BE1, $4, $6EC9, $4, $7312, 
 dw $4, $7AFC, $5, $4001, $5, $423C, $5, $4881, $5, $4B72, $5, $4E2E, $5, $52F5, $5, $5593
 dw $3, $7F4A
 
-data_3bba: ; 0x3bba
-dw Bank(data_17fe1), data_17fe1, Bank(data_17fe3), data_17fe3, $1, $7FE5, $1, $7FE7, $1, $7FE9, $1, $7FEB, $1, $7FED, $1, $7FEF
-dw $1, $7FF1, $1, $7FF3, $1, $7FF5, $1, $7FF7, $1, $7FF9, $1, $7FFB, $1, $7FFD, $2, $7FF6
+LevelSize: ; 0x3bba
+	BankAddr data_17fe1 ; 1-1
+	BankAddr data_17fe3 ; 1-2
+	BankAddr data_17fe5 ; 1-3
+	BankAddr data_17fe7 ; 1-4
+	BankAddr data_17fe9 ; 1-5
+	BankAddr data_17feb ; 1-6
+	BankAddr data_17fed ; 1-7
+	BankAddr data_17fef ; 1-8
+	BankAddr data_17ff1 ; 2-1
+	BankAddr data_17ff3 ; 2-2
+	BankAddr data_17ff5 ; 2-3
+	BankAddr data_17ff7 ; 2-4
+	BankAddr data_17ff9 ; 2-5
+	BankAddr data_17ffb ; 2-6
+	BankAddr data_17ffd ; 2-7
+dw $2, $7FF6
 dw $2, $7FF8, $2, $7FFA, $2, $7FFC, $2, $7FFE, $3, $7F8D, $3, $7F8F, $3, $7F91, $3, $7F93
 dw $3, $7F95, $3, $7F97, $3, $7F99, $3, $7F9B, $3, $7F9D, $3, $7F9F, $3, $7FA1, $3, $7FA3
 dw $3, $7FA5, $3, $7FA7, $3, $7FA9, $3, $7FAB, $3, $7FAD, $3, $7FAF, $3, $7FB1, $3, $7FB3
@@ -8288,24 +8492,24 @@ dw $3, $7FC5, $3, $7FC7, $3, $7FC9, $3, $7FCB, $3, $7FCD, $3, $7FCF, $3, $7FD1, 
 dw $3, $7FD5, $3, $7FD7, $3, $7FD9, $3, $7FDB, $3, $7FDD, $3, $7FDF, $3, $7FE1, $3, $7FE3
 dw $3, $7FE5
 
-data_3cbe: ; 0x3cbe Object data
+ObjectListPtrs: ; 0x3cbe Object data
 ; address, NrOfObjects
 	ObjListPtr data_37fe7, 4 ; 1-1
 db $04, $08, $AD, $7F ; 1-2
 	ObjListPtr data_5589d, 16 ; 1-3
 	ObjListPtr data_558ed, 13 ; 1-4
-db $05, $1D, $2E, $59
-db $05, $0E, $BF, $59
-db $05, $13, $05, $5A
-db $05, $27, $64, $5A
-db $05, $12, $27, $5B
-db $05, $11, $81, $5B
-db $05, $10, $D6, $5B
-db $05, $0B, $26, $5C
-db $05, $23, $5D, $5C
-db $05, $18, $0C, $5D
-db $05, $0D, $84, $5D
-db $05, $0E, $C5, $5D
+	ObjListPtr data_5592E, 29 ; 1-5
+	ObjListPtr data_559BF, 14 ; 1-6
+	ObjListPtr data_55A05, 19 ; 1-7
+	ObjListPtr data_55A64, 39 ; 1-8
+	ObjListPtr data_55B27, 18 ; 2-1
+	ObjListPtr data_55B81, 17 ; 2-2
+	ObjListPtr data_55BD6, 16 ; 2-3
+	ObjListPtr data_55C26, 11 ; 2-4
+	ObjListPtr data_55C5D, 35 ; 2-5
+	ObjListPtr data_55D0C, 24 ; 2-6
+	ObjListPtr data_55D84, 13 ; 2-7
+	ObjListPtr data_55DC5, 14 ; 2-8
 db $05, $1F, $0B, $5E
 db $05, $1D, $A6, $5E
 db $05, $0F, $37, $5F
@@ -8354,10 +8558,10 @@ db $05, $22, $9C, $72
 db $05, $04, $46, $73
 db $05, $0B, $5A, $73
 db $05, $29, $91, $73
-db Bank(data_37ffb), $01, $FB, $7F
+	ObjListPtr data_37ffb, 1
 
 data_3dc2: ; 0x3dc2
-db $05, $00, $5E, $74
+	BankAddr data_5745e
 db $05, $00, $79, $74
 db $05, $00, $45, $75
 db $05, $00, $AB, $75
