@@ -746,61 +746,28 @@ data_1740e: ; 1:740e
 INCBIN "baserom.gb", $4000*1+$340e, $3418-$340e
 
 data_17418: ; 1:7418
-db $81, $19, $47, $1B
-db $82, $19, $1A, $02, $18
-db $84, $38, $01, $02, $03, $08, $02
-db $84, $3B, $1B, $19, $1A, $02, $18
-db $82, $15, $2B, $09, $36
-db $85, $2B, $08, $1B, $19, $1A, $02, $18
-db $82, $2C, $29, $09, $36
-db $85, $24, $2F, $1B, $19, $1A, $03, $21
-db $82, $2C, $29, $07, $36
-db $82, $24, $2F, $02, $21
-db $82, $19, $1A, $04, $21
-db $82, $2C, $29, $05, $36
-db $82, $24, $2F, $03, $21
-db $82, $19, $1A, $05, $21
-db $82, $2C, $29, $03, $36
-db $82, $24, $2F, $04, $21
-db $82, $18, $19, $02, $1A
-db $81, $18, $02, $1A
-db $86, $18, $2C, $29, $2B, $24, $2F, $05, $21
-db $83, $1A, $21, $18, $02, $19, $02, $1A
-db $86, $19, $1A, $2C, $25, $2F, $19, $02, $1A
-db $83, $19, $1A, $18, $02, $21
-db $82, $18, $19, $02, $1A
-db $81, $19, $02, $1A
-db $85, $19, $1A, $0C, $18, $19, $02, $1A
-db $82, $19, $1A, $12, $14
-db $FF
+INCBIN "build/data/1-1.rle"
 
 data_174b1: ; 1:74b1
-
-INCBIN "baserom.gb", $4000*1+$34b1, $3568-$34b1
+INCBIN "build/data/1-2.rle"
 
 data_17568: ; 1:7568
-
-INCBIN "baserom.gb", $4000*1+$3568, $3681-$3568
+INCBIN "build/data/1-3.rle"
 
 data_17681: ; 1:7681
-
-INCBIN "baserom.gb", $4000*1+$3681, $37ac-$3681
+INCBIN "build/data/1-4.rle"
 
 data_177ac: ; 1:77ac
-
-INCBIN "baserom.gb", $4000*1+$37ac, $38c2-$37ac
+INCBIN "build/data/1-5.rle"
 
 data_178c2: ; 1:78c2
-
-INCBIN "baserom.gb", $4000*1+$38c2, $3a5a-$38c2
+INCBIN "build/data/1-6.rle"
 
 data_17a5a: ; 1:7a5a
-
-INCBIN "baserom.gb", $4000*1+$3a5a, $3d2e-$3a5a
+INCBIN "build/data/1-7.rle"
 
 data_17d2e: ; 1:7d2e
-
-INCBIN "baserom.gb", $4000*1+$3d2e, $3fe1-$3d2e
+INCBIN "build/data/1-8.rle"
 
 data_17fe1: ; 1:7fe1
 db $0D, $11

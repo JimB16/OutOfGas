@@ -29,16 +29,29 @@ all: $(roms)
 
 clean:
 	rm -f $(roms) $(all_obj) $(roms:.gb=.map) $(roms:.gb=.sym)
+	rm -rf build/*
 
 #compare: linksawakeningdx.gbc pokecrystal11.gbc
 #	@$(MD5) roms.md5
 
+rle_files := $(wildcard data/*.rle)
+RLE := $(addprefix build/, $(rle_files:.rle=.rle))
+
 %.asm: ;
-$(all_obj): $$*.asm $$($$*_dep)
+$(all_obj): $$*.asm $$($$*_dep) $(RLE)
 	rgbasm -o $@ $<
 
 build:
 	mkdir -p $@
+
+build/data:
+	mkdir -p $@
+
+
+build/data/%.rle: data/%.bin | build/data
+	python tools/decompressLevelData.py $< build/data/ -c
+	#$(DEVKITARM)/bin/arm-none-eabi-as -mcpu=arm7tdmi -X -mthumb-interwork $< -o $(subst .s,.o,$<)
+
 
 outofgas.gb: $(oog_obj) | build
 	rgblink -n $*.sym -m $*.map -o $@ $^
@@ -49,7 +62,11 @@ outofgas.gb: $(oog_obj) | build
 	diff -u build/baserom.txt build/outofgas.txt | less > build/diff.txt
 
 disassem:
-	python $(poketools)/gbz80disasm.py 2:4027 > rawcode.asm
+	python $(poketools)/gbz80disasm.py 0:3224 > rawcode.asm
+
+rle:
+	$(foreach f,$(rle_files),python tools/decompressLevelData.py $(f) data/ -d;)
+
 
 #pngs:
 #	find . -iname "*.lz"      -exec $(gfx) unlz {} +
