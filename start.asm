@@ -8244,7 +8244,7 @@ data_378e: ; 0x378e
 	BankAddr Bank1Start
 	BankAddr Bank2Start
 	BankAddr Bank3Start
-dw $4, $4000
+	BankAddr Bank4Start
 	BankAddr Bank5Start
 dw $6, $4000, $7, $4000
 
@@ -8458,13 +8458,66 @@ LevelData: ; 0x3ab6
 	BankAddr data_178c2 ; 1-6
 	BankAddr data_17a5a ; 1-7
 	BankAddr data_17d2e ; 1-8
-dw $2, $72E7, $2, $73DC, $2, $759C, $2, $77A5, $2, $7994, $2, $7C2A, $2, $7E2D, $3, $4001
-dw $3, $42A9, $3, $45AE, $3, $4939, $3, $4B80, $3, $4E21, $3, $4F72, $3, $5161, $3, $53ED
-dw $3, $56DB, $3, $58D1, $3, $5A91, $3, $5C5F, $3, $5D87, $3, $604A, $3, $6280, $3, $6693
-dw $3, $6852, $3, $6A67, $3, $6E93, $3, $714A, $3, $7467, $3, $770F, $3, $7B67, $4, $4001
-dw $3, $7D91, $4, $4541, $4, $47C0, $4, $4B7D, $4, $4E7D, $4, $54D4, $4, $588C, $4, $5CF2
-dw $4, $6115, $4, $638E, $4, $6539, $4, $6821, $4, $6BE1, $4, $6EC9, $4, $7312, $4, $78CE
-dw $4, $7AFC, $5, $4001, $5, $423C, $5, $4881, $5, $4B72, $5, $4E2E, $5, $52F5, $5, $5593
+	BankAddr data_272e7 ; 2-1
+	BankAddr data_273dc ; 2-2
+	BankAddr data_2759c ; 2-3
+	BankAddr data_277a5 ; 2-4
+	BankAddr data_27994 ; 2-5
+	BankAddr data_27c2a ; 2-6
+	BankAddr data_27e2d ; 2-7
+	BankAddr data_34001 ; 2-8
+
+	BankAddr data_342a9 ; 3-1
+	BankAddr data_345ae ; 3-2
+	BankAddr data_34939 ; 3-3
+	BankAddr data_34b80 ; 3-4
+	BankAddr data_34e21 ; 3-5
+	BankAddr data_34f72 ; 3-6
+	BankAddr data_35161 ; 3-7
+	BankAddr data_353ed ; 3-8
+	BankAddr data_356db ; 4-1
+	BankAddr data_358d1 ; 4-2
+	BankAddr data_35a91 ; 4-3
+	BankAddr data_35c5f ; 4-4
+	BankAddr data_35d87 ; 4-5
+	BankAddr data_3604a ; 4-6
+	BankAddr data_36280 ; 4-7
+	BankAddr data_36693 ; 4-8
+
+	BankAddr data_36852 ; 5-1
+	BankAddr data_36a67 ; 5-2
+	BankAddr data_36e93 ; 5-3
+	BankAddr data_3714a ; 5-4
+	BankAddr data_37467 ; 5-5
+	BankAddr data_3770f ; 5-6
+	BankAddr data_37b67 ; 5-7
+	BankAddr data_44001 ; 5-8
+	BankAddr data_37d91 ; 6-1
+	BankAddr data_44541 ; 6-2
+	BankAddr data_447c0 ; 6-3
+	BankAddr data_44b7d ; 6-4
+	BankAddr data_44e7d ; 6-5
+	BankAddr data_454d4 ; 6-6
+	BankAddr data_4588c ; 6-7
+	BankAddr data_45cf2 ; 6-8
+
+	BankAddr data_46115 ; 7-1
+	BankAddr data_4638e ; 7-2
+	BankAddr data_46539 ; 7-3
+	BankAddr data_46821 ; 7-4
+	BankAddr data_46be1 ; 7-5
+	BankAddr data_46ec9 ; 7-6
+	BankAddr data_47312 ; 7-7
+	BankAddr data_478ce ; 7-8
+	BankAddr data_47afc ; 8-1
+	BankAddr data_54001 ; 8-2
+	BankAddr data_5423c ; 8-3
+	BankAddr data_54881 ; 8-4
+	BankAddr data_54b72 ; 8-5
+	BankAddr data_54e2e ; 8-6
+	BankAddr data_552f5 ; 8-7
+	BankAddr data_55593 ; 8-8
+
 dw $3, $7F4A
 
 LevelSize: ; 0x3bba

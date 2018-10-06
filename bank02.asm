@@ -795,6 +795,31 @@ dw $4BC2, $57CE, $61D4, $7064, $7132, $7233, .data_24a14, $4A27, $4A76, $4A8C, $
 
 .data_24a14 ; 2:4a14
 
+INCBIN "baserom.gb", 16384*2+$a14, $32e7-$a14
 
-INCBIN "baserom.gb", 16384*2+$a14, $4000-$a14
+data_272e7: ; 2:72e7
+INCBIN "build/data/2-1.rle"
+
+data_273dc: ; 2:73dc
+INCBIN "build/data/2-2.rle"
+
+data_2759c: ; 2:759c
+INCBIN "build/data/2-3.rle"
+
+data_277a5: ; 2:77a5
+INCBIN "build/data/2-4.rle"
+
+data_27994: ; 2:7994
+INCBIN "build/data/2-5.rle"
+
+data_27c2a: ; 2:7c2a
+INCBIN "build/data/2-6.rle"
+
+data_27e2d: ; 2:7e2d
+INCBIN "build/data/2-7.rle"
+
+
+data_27ff6: ; 2:7ff6
+
+INCBIN "baserom.gb", 16384*2+$3ff6, $4000-$3ff6
 

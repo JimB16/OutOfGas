@@ -3,8 +3,31 @@
 SECTION "bank5", ROMX, BANK[$5]
 
 Bank5Start: ; 5:4000
+db 5
 
-INCBIN "baserom.gb", 16384*5+$0, $189d-$0
+
+data_54001: ; 5:4001
+INCBIN "build/data/8-2.rle"
+
+data_5423c: ; 5:423c
+INCBIN "build/data/8-3.rle"
+
+data_54881: ; 5:4881
+INCBIN "build/data/8-4.rle"
+
+data_54b72: ; 5:4b72
+INCBIN "build/data/8-5.rle"
+
+data_54e2e: ; 5:4e2e
+INCBIN "build/data/8-6.rle"
+
+data_552f5: ; 5:52f5
+INCBIN "build/data/8-7.rle"
+
+data_55593: ; 5:5593
+INCBIN "build/data/8-8.rle"
+
+
 
 data_5589d: ; 5:589d
 	Object $0A, $8B, $110

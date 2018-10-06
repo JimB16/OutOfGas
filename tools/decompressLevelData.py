@@ -35,33 +35,27 @@ def CompressRLE(data):
     repeat_counter = 0
     repeated_value = 0
 	
-    for i in range(len(data)-1):
-        if data[i] != data[i+1]:
+    i = 0
+    while i < (len(data)):
+        while (i < (len(data)-1)) and (data[i] != data[i+1]):
             individuals = individuals + (data[i],)
-            if repeat_counter != 0:
-                repeat_counter = repeat_counter + 1
-                repeated_value = data[i]
-                ret = ret + (repeat_counter,)
-                ret = ret + (repeated_value,)
-                repeat_counter = 0
-                individuals = ()
-        else:
-            if len(individuals) > 0:
-                ret = ret + ((len(individuals)+128),)
-                ret = ret + individuals
-                individuals = ()
-            repeat_counter = repeat_counter + 1
-            repeated_value = data[i]
+            i+=1
+        if i == (len(data)-1):
+            individuals = individuals + (data[i],)
+            i+=1
+        if len(individuals) > 0:
+            ret = ret + ((len(individuals)+128),) + individuals
+            individuals = ()
 
-    if repeat_counter != 0:
-        repeat_counter = repeat_counter + 1
-        repeated_value = data[i]
-        ret = ret + (repeat_counter,)
-        ret = ret + (repeated_value,)
-    if len(individuals) > 0:
-        individuals = individuals + (data[len(data)-1],)
-        ret = ret + ((len(individuals)+128),)
-        ret = ret + individuals
+        while (i < (len(data)-1)) and (data[i] == data[i+1]) and (repeat_counter < 125):
+            repeat_counter+=1
+            repeated_value = data[i]
+            i+=1
+        if repeat_counter > 0:
+            repeat_counter+=1
+            i+=1
+            ret = ret + (repeat_counter,) + (repeated_value,)
+            repeat_counter = 0
 
     ret = ret + (255,)
     return ret
